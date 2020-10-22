@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "169205356932",
+    "firebase_url": "https://kiakia-project.firebaseio.com",
+    "project_id": "kiakia-project",
+    "storage_bucket": "kiakia-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169205356932:android:9f075020331aeb7b7365d1",
+        "android_client_info": {
+          "package_name": "com.mobile.kiakia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "169205356932-n16pcoq6jeuobasite4otaj759o4k49u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mobile.kiakia",
+            "certificate_hash": "7db75bdaf87b0a72937b7e7c0b20803776fa4465"
+          }
+        },
+        {
+          "client_id": "169205356932-2uugopk4f9vqdtd1p65a2kg51houd9fd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB84JRJ6fyVG8Xj_e0oncojTcAOMtlIYuA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "169205356932-2uugopk4f9vqdtd1p65a2kg51houd9fd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "169205356932-hs3m8i0blj673vic6fm6hs5krlo40pmh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mobile.kiakia"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>169205356932-hs3m8i0blj673vic6fm6hs5krlo40pmh.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.169205356932-hs3m8i0blj673vic6fm6hs5krlo40pmh</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBeVrfQZqFakAA-jHc0RMHg_dWEiraKQkk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>169205356932</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.mobile.kiakia</string>
+	<key>PROJECT_ID</key>
+	<string>kiakia-project</string>
+	<key>STORAGE_BUCKET</key>
+	<string>kiakia-project.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:169205356932:ios:1a56ffe086bc12927365d1</string>
+	<key>DATABASE_URL</key>
+	<string>https://kiakia-project.firebaseio.com</string>
+</dict>
+</plist>
