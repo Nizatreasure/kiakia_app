@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 
+//creates a dialog box asking a user to enter a new number
 Future<void> changeUserNumber(BuildContext myContext) async {
   String number;
   return showDialog<void>(
@@ -57,7 +58,8 @@ Future<void> changeUserNumber(BuildContext myContext) async {
                     FlatButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          updateUserNumberDetails(number, myContext);},
+                          updateUserNumberDetails(number, myContext);
+                        },
                         child: Text(
                           'Done',
                           style: TextStyle(
@@ -74,8 +76,7 @@ Future<void> changeUserNumber(BuildContext myContext) async {
       });
 }
 
-
-//responsible for updating a user number in the database and then calling the verify number function
+//responsible for updating a user number in the database and then calling the verify number function to verify the new number
 Future<void> updateUserNumberDetails(
     String number, BuildContext myContext) async {
   final uid = FirebaseAuth.instance.currentUser.uid;
@@ -85,28 +86,25 @@ Future<void> updateUserNumberDetails(
       .child(uid)
       .once();
 
-  //this function runs if a number has been already been linked to the account
+  //if an account is already associated with the user, first unlink the number before registering a new one
   if (snapshot.value['isNumberVerified'] == true) {
-    await FirebaseAuth.instance.currentUser.unlink('phone');
-    await FirebaseDatabase.instance
-        .reference()
-        .child('users')
-        .child(uid)
-        .update({'isNumberVerified': false});
+    await unlinkNumber();
   }
+
+  //updates the number in the database
   await FirebaseDatabase.instance
       .reference()
       .child('users')
       .child(uid)
       .update({'number': '+234' + number.substring(1, 11)});
 
+  //shows  the number not verified popup and asks the user to verify their number
   numberNotVerifiedPopup('+234' + number.substring(1, 11), myContext);
-
 }
 
-
 //creates a dialog box that notifies the user whose phone number has not been verified to verify it
-Future<void> numberNotVerifiedPopup(String number, BuildContext myContext) async {
+Future<void> numberNotVerifiedPopup(
+    String number, BuildContext myContext) async {
 //    return changeUserNumber(context);
   return showDialog<void>(
       context: myContext,
@@ -118,12 +116,11 @@ Future<void> numberNotVerifiedPopup(String number, BuildContext myContext) async
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.w500),
                   children: [
-                    TextSpan(text: 'Number not verified: '),
-                    TextSpan(
-                        text: '0' + number.substring(4,14),
-                        style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 17))
-                  ])),
+                TextSpan(text: 'Number not verified: '),
+                TextSpan(
+                    text: '0' + number.substring(4, 14),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17))
+              ])),
           actions: [
             FlatButton(
               onPressed: () {
@@ -135,7 +132,9 @@ Future<void> numberNotVerifiedPopup(String number, BuildContext myContext) async
               onPressed: () {
                 Navigator.pop(context);
                 AuthenticationService().verifyNumber(
-                    number: number, myContext: myContext); //calls the function that starts the number verification process
+                    number: number,
+                    myContext:
+                        myContext); //calls the function that starts the number verification process
               },
               child: Text('Verify Now'),
             ),
@@ -144,10 +143,14 @@ Future<void> numberNotVerifiedPopup(String number, BuildContext myContext) async
       });
 }
 
-
-Future<void> unlinkNumber () async {
+//unlink the number currently associated with user account
+Future<void> unlinkNumber() async {
   await FirebaseAuth.instance.currentUser.unlink('phone');
-  FirebaseDatabase.instance.reference().child('users').child(FirebaseAuth.instance.currentUser.uid).update({
+  await FirebaseDatabase.instance
+      .reference()
+      .child('users')
+      .child(FirebaseAuth.instance.currentUser.uid)
+      .update({
     'isNumberVerified': false,
   });
 }

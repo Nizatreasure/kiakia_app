@@ -8,6 +8,7 @@ class MyDrawer extends StatelessWidget {
   MyDrawer(this.userData);
   final storage = new LocalStorage('user_data.json');
 
+  //retrieves the strored data from the user's local storage
   getUserDataFromStorage () {
    return storage.getItem('userData');
 

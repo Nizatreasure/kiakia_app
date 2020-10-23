@@ -18,19 +18,19 @@ class _HomeState extends State<Home> {
   double value = 78; //the value that shows at the center of the gauge
   bool verifyNumber = false;
 
-  //the functions checks if the user's phone number has been verified. if it has not been verified, the verifyNumber variable is set to true;
+  //the functions checks if the user's phone number has been verified. if it has not been verified, the verifyNumber variable is set to true and the user is asked to verify their number;
   _isUserVerified() async {
-     final uid = FirebaseAuth.instance.currentUser.uid;
-     final snapshot = await FirebaseDatabase.instance
-         .reference()
-         .child('users')
-         .child(uid)
-         .once();
-     if (snapshot.value['isNumberVerified'] == false) {
-       numberNotVerifiedPopup(snapshot.value['number'], context);
-   }
+    final uid = FirebaseAuth.instance.currentUser.uid;
+    final snapshot = await FirebaseDatabase.instance
+        .reference()
+        .child('users')
+        .child(uid)
+        .once();
+    if (snapshot.value['isNumberVerified'] == false) {
+      //shows the dialog asking users whose numbers have not been verified to verify it
+      numberNotVerifiedPopup(snapshot.value['number'], context);
+    }
   }
-
 
   @override
   void initState() {
@@ -40,14 +40,13 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-
     return ListView(
       children: [
         Stack(
           alignment: Alignment.bottomCenter,
           children: [
+            //this container specifies the height for displaying the gauge
             Container(
-              //this container specifies the height for displaying the gauge
               height: 170,
               padding: EdgeInsets.only(bottom: 15),
               child: Center(

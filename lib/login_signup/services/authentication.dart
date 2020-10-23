@@ -57,19 +57,21 @@ class AuthenticationService {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      RichText(textAlign: TextAlign.center,
+                      RichText(
+                          textAlign: TextAlign.center,
                           text: TextSpan(
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 15,
                               ),
                               children: [
-                        TextSpan(text: 'An SMS code has been sent to '),
-                        TextSpan(
-                            text: '0${number.substring(4, 14)}',
-                            style: TextStyle(
-                                fontSize: 17, fontWeight: FontWeight.bold))
-                      ])),
+                                TextSpan(text: 'An SMS code has been sent to '),
+                                TextSpan(
+                                    text: '0${number.substring(4, 14)}',
+                                    style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold))
+                              ])),
                       SizedBox(
                         height: 20,
                       ),
@@ -94,7 +96,7 @@ class AuthenticationService {
                         height: 10,
                       ),
 
-                  //displays a progress indicator or an error message
+                      //displays a progress indicator when the verify button is clicked. the loader changes to an error message if an error occurred
                       showLoaderAndError
                           ? Center(
                               child: showLoader
@@ -103,8 +105,11 @@ class AuthenticationService {
                                       child: CircularProgressIndicator(),
                                     )
                                   : Text(
-                                      otpError, textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.red,),
+                                      otpError,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
                                     ),
                             )
                           : Text(''),
@@ -112,11 +117,11 @@ class AuthenticationService {
                         height: 15,
                       ),
 
-               //the two button are created inside a row
+                      //the change number and verify buttons  are created inside a row
                       Row(
                         children: [
                           FlatButton(
-                              onPressed: (){
+                              onPressed: () {
                                 Navigator.pop(context);
                                 changeUserNumber(myContext);
                               },
@@ -140,7 +145,7 @@ class AuthenticationService {
                                           PhoneAuthProvider.credential(
                                               verificationId: verId,
                                               smsCode: smsCode);
-
+                                      //links the number entered by the user to their current email. it displays an error message if the operation was not successful
                                       try {
                                         otpError = '';
                                         await _auth.currentUser
@@ -152,7 +157,6 @@ class AuthenticationService {
                                             .update({'isNumberVerified': true});
                                         Navigator.pop(context);
                                       } on FirebaseAuthException catch (e) {
-                                        print(e.message);
                                         setState(() {
                                           showLoader = false;
                                           if (e.code ==
@@ -163,17 +167,18 @@ class AuthenticationService {
                                               'invalid-verification-code') {
                                             otpError =
                                                 'Invalid verification code';
-                                          }
-                                          else if (e.message == 'com.google.firebase.FirebaseException: User has already been linked to the given provider.') {
-                                            otpError = 'A number has already been linked with this account';
-                                          }
-                                          else otpError = 'An error occured';
+                                          } else if (e.message ==
+                                              'com.google.firebase.FirebaseException: User has already been linked to the given provider.') {
+                                            otpError =
+                                                'A number has already been linked with this account';
+                                          } else
+                                            otpError = 'An error occurred';
                                         });
 
                                         return null;
                                       } catch (e) {
                                         setState(() {
-                                          otpError = 'An error occured';
+                                          otpError = 'An error occurred';
                                         });
                                       }
                                     },
@@ -198,8 +203,12 @@ class AuthenticationService {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       User user = result.user;
+
+      //creates a database document for the user based on their firebase id
       await DatabaseService(uid: user.uid)
           .createUser(name: name, number: number, email: email);
+
+      //updates the firebase display name of the user to the name inputted
       await _auth.currentUser.updateProfile(displayName: name);
       return user;
     } on FirebaseAuthException catch (e) {
@@ -221,7 +230,7 @@ class AuthenticationService {
     }
   }
 
-  //the function responsible for initiating the process of  number verification
+  //the function responsible for initiating the process of  number verification when the user clicks on the 'verify now' button on the pop up
   Future verifyNumber({number, BuildContext myContext}) async {
     int _resendToken;
     try {
@@ -252,8 +261,7 @@ class AuthenticationService {
             _showDialog(myContext, verId, number);
           },
           timeout: Duration(seconds: 60),
-          codeAutoRetrievalTimeout: (verificationID) {
-          });
+          codeAutoRetrievalTimeout: (verificationID) {});
     } on FirebaseAuthException catch (e) {
       if (e.code == 'network-request-failed') {
         error = 'Network request failed';
@@ -276,28 +284,25 @@ class AuthenticationService {
     }
   }
 
-  Future resetUserPassword (email) async {
-    try{
+  //sends a password reset mail to registered users who have forgotten their password
+  Future resetUserPassword(email) async {
+    try {
       await _auth.sendPasswordResetEmail(email: email);
       return true;
     } on FirebaseAuthException catch (e) {
       print('error: $e');
       if (e.code == 'user-not-found') {
         error = 'User does not exist';
-      }
-      else if (e.code =='invalid-email') {
+      } else if (e.code == 'invalid-email') {
         error = 'Email is not valid';
-      }
-      else error = 'An error occurred. Try again later';
+      } else
+        error = 'An error occurred. Try again later';
       return null;
     }
-
   }
 
-
-  //listens for changes in the user account such as log in  and log out
+  //listens for changes in the user account such as sign in and sign out
   Stream<User> get user {
     return _auth.authStateChanges();
   }
 }
-

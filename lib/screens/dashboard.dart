@@ -30,8 +30,8 @@ class _DashboardState extends State<Dashboard> {
   StreamSubscription<Event> userDataStream;
   Map snapshot;
 
+  //moves the bottom navigation bar to the order page
   void setCurrentNavigationBarIndex() {
-    //moves the bottom navigation bar to the order page
     setState(() {
       _currentBottomNavigationBarIndex = 1;
     });
@@ -41,17 +41,14 @@ class _DashboardState extends State<Dashboard> {
     await TimeMachine.initialize({'rootBundle': rootBundle});
   }
 
-  _saveUserDataToStorage ({name, email, number, status}) { //saves user information to their local storage
+  //saves user information to their local storage
+  _saveUserDataToStorage({name, email, number, status}) {
     Map<String, dynamic> userData = new Map();
     userData['name'] = name;
     userData['email'] = email;
     userData['number'] = number;
     userData['status'] = status;
     storage.setItem('userData', userData);
-//    storage.setItem('name', name);
-//    storage.setItem('number', number);
-//    storage.setItem('email', email);
-//    storage.setItem('status', status);
   }
 
   //gets the user information from the database, listens for changes in the data and stores it locally
@@ -61,7 +58,11 @@ class _DashboardState extends State<Dashboard> {
     userDataStream = database.child('users').child(uid).onValue.listen((event) {
       Map snap = event.snapshot.value;
       if (snap.isNotEmpty) {
-        _saveUserDataToStorage(name: snap['name'], email: snap['email'], number: snap['number'], status: snap['isNumberVerified']);
+        _saveUserDataToStorage(
+            name: snap['name'],
+            email: snap['email'],
+            number: snap['number'],
+            status: snap['isNumberVerified']);
       }
     });
   }

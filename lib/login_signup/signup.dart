@@ -2,7 +2,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kiakia/login_signup/decoration.dart';
-import 'package:flutter/services.dart';//necessary for using inputFormatter to receive numbers only
+import 'package:flutter/services.dart'; //necessary for using inputFormatter to receive numbers only
 import 'package:kiakia/login_signup/services/authentication.dart';
 
 class SignUp extends StatefulWidget {
@@ -22,7 +22,7 @@ class _SignUpState extends State<SignUp> {
   bool showLoader = false;
   bool showLoaderAndError = false;
   FocusNode _passwordFocusNode;
-  String number='', password='', name ='', email='';
+  String number = '', password = '', name = '', email = '';
   String errorMessage = '';
   TextEditingController _numberController = new TextEditingController();
 
@@ -30,15 +30,15 @@ class _SignUpState extends State<SignUp> {
   void initState() {
     super.initState();
     _passwordFocusNode = FocusNode();
-    _passwordFocusNode.addListener(() { //hides the password when a user focus changes from the password field
+    _passwordFocusNode.addListener(() {
+      //hides the password when a user focus changes from the password field
       if (!_passwordFocusNode.hasFocus) {
         _hidePassword = true;
       }
     });
-    _scrollController = new  ScrollController();
-    _scrollController.addListener(() {
-    });
-    _numberController.addListener(() { });
+    _scrollController = new ScrollController();
+    _scrollController.addListener(() {});
+    _numberController.addListener(() {});
   }
 
   @override
@@ -49,26 +49,15 @@ class _SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
+    //gets the width of the current device from mediaQuery
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.white,
-//      appBar: AppBar(
-//        backgroundColor: Colors.white,
-//        leading: IconButton(
-//          icon: Icon(
-//            Icons.keyboard_arrow_left,
-//            color: Colors.black,
-//            size: 30,
-//          ),
-//          onPressed: () {
-//            Navigator.pop(context);
-//          },
-//        ),
-//        elevation: 0,
-//      ),
       body: SafeArea(
         child: Padding(
-          padding:  width > 500 ? EdgeInsets.symmetric(horizontal: 50.0) : EdgeInsets.symmetric(horizontal: 30.0),
+          padding: width > 500
+              ? EdgeInsets.symmetric(horizontal: 50.0)
+              : EdgeInsets.symmetric(horizontal: 30.0),
           child: LayoutBuilder(
             builder: (context, viewport) {
               return SingleChildScrollView(
@@ -78,7 +67,7 @@ class _SignUpState extends State<SignUp> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                       Spacer(
+                        Spacer(
                           flex: 3,
                         ),
                         Container(
@@ -97,56 +86,71 @@ class _SignUpState extends State<SignUp> {
                           key: _formKey,
                           child: Column(
                             children: [
+                              //creates a formfield where users input their names
                               TextFormField(
                                 onChanged: (val) {
                                   name = val.trim();
                                 },
                                 textCapitalization: TextCapitalization.words,
-                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                                 textAlignVertical: TextAlignVertical.bottom,
                                 style: TextStyle(
                                     height: 1.5,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500),
                                 decoration: decoration.copyWith(
-                                    labelText: 'Name', hintText: 'Enter your name'),
+                                    labelText: 'Name',
+                                    hintText: 'Enter your name'),
                                 validator: (val) {
-                                 if (val.trim().isEmpty) return 'Field cannot be empty';
-                                 else return null;
+                                  if (val.trim().isEmpty)
+                                    return 'Field cannot be empty';
+                                  else
+                                    return null;
                                 },
                               ),
                               SizedBox(height: 10),
+
                               //creates the field for entering the user email during signUp
                               TextFormField(
                                 onChanged: (val) {
                                   email = val;
                                 },
                                 keyboardType: TextInputType.emailAddress,
-                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                                 textAlignVertical: TextAlignVertical.bottom,
                                 style: TextStyle(
                                     height: 1.5,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500),
                                 decoration: decoration.copyWith(
-                                    labelText: 'Email', hintText: 'Enter your email'),
+                                    labelText: 'Email',
+                                    hintText: 'Enter your email'),
                                 validator: (val) {
-                                  return EmailValidator.validate(val.trimRight()) ? null : 'Email is not valid';
+                                  return EmailValidator.validate(
+                                          val.trimRight())
+                                      ? null
+                                      : 'Email is not valid';
                                 },
                               ),
                               SizedBox(height: 10),
+
                               //creates the field for entering mobile phone number during signUp
                               TextFormField(
                                 controller: _numberController,
                                 onChanged: (val) {
                                   number = val;
                                   if (val.length == 11) {
-                                    FocusScope.of(context).focusedChild.unfocus();
+                                    FocusScope.of(context)
+                                        .focusedChild
+                                        .unfocus();
                                     _passwordFocusNode.requestFocus();
                                   }
                                 },
                                 maxLength: 11,
-                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                                 textAlignVertical: TextAlignVertical.bottom,
                                 style: TextStyle(
                                     height: 1.5,
@@ -155,23 +159,28 @@ class _SignUpState extends State<SignUp> {
                                 validator: (val) {
                                   if (val.trim().length != 11) {
                                     return 'Phone number must be 11 digits long';
-                                  }
-                                  else return null;
+                                  } else
+                                    return null;
                                 },
                                 keyboardType: TextInputType.number,
-                                inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(11)], //makes the textField receive only digits
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(11)
+                                ], //makes the textField receive only digits
                                 decoration: decoration.copyWith(
                                     labelText: 'Phone Number',
                                     hintText: 'Enter your phone number',
-                                    counterText: '' ),
+                                    counterText: ''),
                               ),
                               SizedBox(height: 10),
+
                               //creates the field for entering password during signUp
                               TextFormField(
                                 onChanged: (val) {
                                   password = val;
                                 },
-                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                                 textAlignVertical: TextAlignVertical.bottom,
                                 style: TextStyle(
                                     height: 1.5,
@@ -180,11 +189,10 @@ class _SignUpState extends State<SignUp> {
                                 validator: (val) {
                                   if (val.trim().isEmpty) {
                                     return 'Password cannot be empty';
-                                  }
-                                  else if (val.trim().length < 5) {
+                                  } else if (val.trim().length < 5) {
                                     return 'Password cannot be less than 5 character';
-                                  }
-                                  else return null;
+                                  } else
+                                    return null;
                                 },
                                 focusNode: _passwordFocusNode,
                                 decoration: decoration.copyWith(
@@ -194,7 +202,8 @@ class _SignUpState extends State<SignUp> {
                                       icon: Icon(Icons.remove_red_eye,
                                           color: _hidePassword
                                               ? Color.fromRGBO(138, 136, 136, 1)
-                                              : Color.fromRGBO(15, 125, 188, 1)),
+                                              : Color.fromRGBO(
+                                                  15, 125, 188, 1)),
                                       onPressed: () {
                                         setState(() {
                                           _hidePassword = !_hidePassword;
@@ -221,7 +230,7 @@ class _SignUpState extends State<SignUp> {
                                     ),
                                     InkWell(
                                       onTap: () {
-                                       widget.togglePage(1);
+                                        widget.togglePage(1);
                                       },
                                       child: Text(
                                         'Sign-in',
@@ -239,17 +248,28 @@ class _SignUpState extends State<SignUp> {
                               //creates the signUp button
                               InkWell(
                                 onTap: () async {
-                                  errorMessage = ''; //resets the error message to an empty string
-                                  if (!FocusScope.of(context).hasPrimaryFocus && FocusScope.of(context).focusedChild != null) {
-                                    FocusScope.of(context).focusedChild.unfocus();}
-
+                                  errorMessage =
+                                      ''; //resets the error message to an empty string
+                                  if (!FocusScope.of(context).hasPrimaryFocus &&
+                                      FocusScope.of(context).focusedChild !=
+                                          null) {
+                                    FocusScope.of(context)
+                                        .focusedChild
+                                        .unfocus();
+                                  }
+                                  //attempts to create an account for the user with email and password. displays an error message if an error occurred
                                   if (_formKey.currentState.validate()) {
                                     setState(() {
                                       showLoaderAndError = true;
                                       showLoader = true;
                                     });
-                                    dynamic result = await _auth.createAccount(password: password, number: '+234' + number.substring(1,11), email: email, name: name);
-                                   if (mounted) {
+                                    dynamic result = await _auth.createAccount(
+                                        password: password,
+                                        number:
+                                            '+234' + number.substring(1, 11),
+                                        email: email,
+                                        name: name);
+                                    if (mounted) {
                                       setState(() {
                                         showLoader = false;
                                       });
@@ -257,9 +277,7 @@ class _SignUpState extends State<SignUp> {
                                     if (result == null) {
                                       errorMessage = _auth.error;
                                     }
-
                                   }
-
                                 },
                                 child: Container(
                                   height: 50,
@@ -279,15 +297,22 @@ class _SignUpState extends State<SignUp> {
                             ],
                           ),
                         ),
-                        showLoaderAndError ? Container(
-                          height: 50,
-                          child: Center(
-                            child: showLoader ? CircularProgressIndicator() : Text(errorMessage, style: TextStyle(color: Colors.red),),
-                          ),): Text(''),
-                       Spacer(
+                        showLoaderAndError
+                            ? Container(
+                                height: 50,
+                                child: Center(
+                                  child: showLoader
+                                      ? CircularProgressIndicator()
+                                      : Text(
+                                          errorMessage,
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                ),
+                              )
+                            : Text(''),
+                        Spacer(
                           flex: 4,
-                        )
-                        ,
+                        ),
                       ],
                     ),
                   ),

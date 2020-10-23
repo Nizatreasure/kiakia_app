@@ -15,8 +15,7 @@ class _OrderState extends State<Order> {
   bool _disableDecreaseGasSizeButton = true;
   int gasSize = 2;
 
-
-  //controls the selection of one size among the available sizes of cylinders
+  //controls the selection of one size among the available sizes of cylinders. initially, everything is set to false as no cylinder size is selected
   Map<int, bool> cylinderSize = {
     1: false,
     2: false,
@@ -40,8 +39,7 @@ class _OrderState extends State<Order> {
     'Direct Deposit'
   ];
 
-
-  //increases the size of the gas cylinder
+  //increases the size of the gas cylinder when the 'plus' sign is clicked on
   void incrementGasSize() {
     setState(() {
       if (gasSize < 20) {
@@ -49,14 +47,16 @@ class _OrderState extends State<Order> {
         _disableDecreaseGasSizeButton = false;
         gasSize += 1;
         if (gasSize != 2 && gasSize != 8 && gasSize != 15) {
+          //the change cylinder size function is called to remove the current selection if the size doesn't match the default sized of the above ( where 2 means 'S', 8 means 'M' and 15 means 'L')
           changeCylinderSize();
-        } // removes selection from the cylinder size container when the increase or decrease button is pressed
+        }
       }
+      //disables the increase button when the maximum size for the cylinder has been selected
       if (gasSize == 20) _disableIncreaseGasSizeButton = true;
     });
   }
 
-  //decreases the size of the gas cylinder
+  //decreases the size of the gas cylinder when the 'minus' sign is clicked on
   void decrementGasSize() {
     setState(() {
       if (gasSize > 2) {
@@ -64,15 +64,18 @@ class _OrderState extends State<Order> {
         _disableIncreaseGasSizeButton = false;
         gasSize -= 1;
         if (gasSize != 8 && gasSize != 15 && gasSize != 20) {
+          //the change cylinder size function is called to remove the current selection if the size doesn't match the default sized of the above ( where 8 means 'M', 15 means 'L' and 20 means 'XL')
           changeCylinderSize();
-        } // removes selection from the cylinder size container when the increase or decrease button is pressed
+        }
       }
+      //decreases the reduce button when the minimum cylinder size has been selected
       if (gasSize == 2) _disableDecreaseGasSizeButton = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    //these if statements ensure that the cylinder sizes are selected when  their corresponding values have been selected
     if (gasSize == 2) cylinderSize[1] = true;
     if (gasSize == 8) cylinderSize[2] = true;
     if (gasSize == 15) cylinderSize[3] = true;
@@ -229,7 +232,7 @@ class _OrderState extends State<Order> {
                   changeCylinderSize();
                   cylinderSize[4] = true;
                   gasSize = 20;
-_disableIncreaseGasSizeButton = true;
+                  _disableIncreaseGasSizeButton = true;
                   _disableDecreaseGasSizeButton = false;
                   setState(() {});
                 },
@@ -328,6 +331,8 @@ _disableIncreaseGasSizeButton = true;
     );
   }
 }
+
+//creates a  container in which the cylinder sizes are displayed
 
 class CylinderSize extends StatelessWidget {
   final String text;

@@ -12,19 +12,20 @@ class OrderDetails extends StatefulWidget {
 
 class _OrderDetailsState extends State<OrderDetails> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  String phoneNumber ='+2348117933576';
+  String phoneNumber = '+2348117933576';
 
-  launchURL (url) async {
+  //responsible for launching the phone call app from within this app
+  launchURL(url) async {
     if (await canLaunch(url)) {
-    await launch(url);
+      await launch(url);
     } else {
-    throw 'Could not launch $url';
+      throw 'Could not launch $url';
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    //gets the current width of the device from mediaQuery
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
       key: _scaffoldKey,
@@ -170,30 +171,41 @@ class _OrderDetailsState extends State<OrderDetails> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               InkWell(
-                onTap: (){
+                onTap: () {
                   launchURL('tel: $phoneNumber');
                 },
                 child: Container(
                   alignment: Alignment.center,
                   height: 40,
-                  width: width/2 - 5,
+                  width: width / 2 - 5,
                   color: Color.fromRGBO(77, 172, 245, 1),
-                  child: Text('Call', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500, fontSize: 18),),
+                  child: Text(
+                    'Call',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18),
+                  ),
                 ),
-
               ),
               InkWell(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TrackRider()));
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => TrackRider()));
                 },
                 child: Container(
                   alignment: Alignment.center,
                   height: 40,
-                  width: width/2 - 5,
+                  width: width / 2 - 5,
                   color: Color.fromRGBO(77, 172, 245, 1),
-                  child: Text('Track', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500, fontSize: 18),),
+                  child: Text(
+                    'Track',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18),
+                  ),
                 ),
-
               ),
             ],
           ),
@@ -209,27 +221,45 @@ class _OrderDetailsState extends State<OrderDetails> {
               height: 50,
               alignment: Alignment.center,
               margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), border: Border.all(color: Color.fromRGBO(77, 172, 246, 1), width: 2)),
-              child: Text('Cancel Order', style: TextStyle(color: Color.fromRGBO(77, 172, 246, 1), fontSize: 18,fontWeight: FontWeight.w600),),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: Color.fromRGBO(77, 172, 246, 1), width: 2)),
+              child: Text(
+                'Cancel Order',
+                style: TextStyle(
+                    color: Color.fromRGBO(77, 172, 246, 1),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600),
+              ),
             ),
           ),
           InkWell(
             onTap: () {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => OrderReceived()));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => OrderReceived()));
             },
             child: Container(
               width: width,
               height: 50,
               alignment: Alignment.center,
               margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Color.fromRGBO(77, 172, 246, 1)),
-              child: Text('Pay Now', style: TextStyle(color: Color.fromRGBO(246, 248, 250, 1), fontSize: 20, fontWeight: FontWeight.w600),),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Color.fromRGBO(77, 172, 246, 1)),
+              child: Text(
+                'Pay Now',
+                style: TextStyle(
+                    color: Color.fromRGBO(246, 248, 250, 1),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600),
+              ),
             ),
           ),
 
           // this container displays the login button and is wrapped with InkWell to make it clickable
-
         ],
-      ), );
+      ),
+    );
   }
 }

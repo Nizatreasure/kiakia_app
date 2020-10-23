@@ -14,7 +14,8 @@ class TrackRider extends StatefulWidget {
   _TrackRiderState createState() => _TrackRiderState();
 }
 
-class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMixin{
+class _TrackRiderState extends State<TrackRider>
+    with AutomaticKeepAliveClientMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   String phoneNumber = '+2348117933576';
   Completer<GoogleMapController> _mapController = Completer();
@@ -76,8 +77,8 @@ class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMi
     if (mounted) setState(() {});
   }
 
+  //sets the time, distance and current location of the rider
   void setTimeDistance() async {
-    //sets the time, distance and current location of the rider
     if (currentPosition != null) {
       Distance myDistance = Distance(url +
           '${currentPosition.latitude},${currentPosition.longitude}&destinations=$_destinationLatitude, $_destinationLongitude&key=' +
@@ -93,8 +94,8 @@ class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMi
     }
   }
 
+  //gets the coordinates between the origin and destination location that would be used to draw the polylines
   _getPolyline() async {
-    //gets the coordinates between the origin and destination location that would be used to draw the polylines
     if (mounted) {
       PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
         googleApiKey,
@@ -102,9 +103,9 @@ class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMi
         PointLatLng(_destinationLatitude, _destinationLongitude),
         travelMode: TravelMode.driving,
       );
-      polylineCoordinates =
-      [
-      ]; //resets the polyline coordinates whenever the riders current location changes
+
+      //resets the polyline coordinates whenever the riders current location changes
+      polylineCoordinates = [];
       if (result.points.isNotEmpty) {
         result.points.forEach((PointLatLng point) {
           polylineCoordinates.add(LatLng(point.latitude, point.longitude));
@@ -114,8 +115,8 @@ class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMi
     }
   }
 
+  //requests for location permission from the users
   getLocationPermission() async {
-    //requests for location permission from the users
     try {
       _serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
@@ -123,24 +124,25 @@ class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMi
         _permissionGranted = await Geolocator.checkPermission();
         if (_permissionGranted == LocationPermission.whileInUse ||
             _permissionGranted == LocationPermission.always) {
-          currentPosition =
-              await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high,);
+          currentPosition = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+          );
           setState(() {});
           setTimeDistance();
-           positionStream =
-               Geolocator.getPositionStream(desiredAccuracy: LocationAccuracy.high)
-                   .listen((Position position) {
-                 currentPosition = position;
-                 changeMarkerLocation();
-                 _getPolyline();
-                 setTimeDistance();
-               });
+          positionStream = Geolocator.getPositionStream(
+                  desiredAccuracy: LocationAccuracy.high)
+              .listen((Position position) {
+            currentPosition = position;
+            changeMarkerLocation();
+            _getPolyline();
+            setTimeDistance();
+          });
         } else {
           if (mounted) {
             setState(() {});
             getLocationPermission();
           }
-          }
+        }
       } else {
         if (mounted) {
           setState(() {});
@@ -159,7 +161,6 @@ class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMi
 
   //updates the location pointer as the current location changes
   changeMarkerLocation() async {
-
     if (mounted) {
       final GoogleMapController controller = await _mapController.future;
       double zoomLevel = await controller.getZoomLevel();
@@ -272,74 +273,81 @@ class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMi
                       onMapCreated: _onMapCreated,
                       initialCameraPosition: initialCameraPosition,
                     ),
-                    distance == null || distance == '' ? Container(height: 0, width: 0,) : Container(
-                      width: MediaQuery.of(context).size.width,
-                      constraints: BoxConstraints(maxHeight: 220),
-                      decoration: BoxDecoration(
-                          color: Color.fromRGBO(77, 172, 246, 1),
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(20),
-                              topRight: Radius.circular(20))),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IntrinsicHeight(
-                              child: Row(
+                    distance == null || distance == ''
+                        ? Container(
+                            height: 0,
+                            width: 0,
+                          )
+                        : Container(
+                            width: MediaQuery.of(context).size.width,
+                            constraints: BoxConstraints(maxHeight: 220),
+                            decoration: BoxDecoration(
+                                color: Color.fromRGBO(77, 172, 246, 1),
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    topRight: Radius.circular(20))),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(distance,
-                                      style: TextStyle(fontSize: 18)),
-                                  VerticalDivider(
-                                    width: 20,
-                                    color: Colors.black,
-                                    thickness: 2,
+                                  IntrinsicHeight(
+                                    child: Row(
+                                      children: [
+                                        Text(distance,
+                                            style: TextStyle(fontSize: 18)),
+                                        VerticalDivider(
+                                          width: 20,
+                                          color: Colors.black,
+                                          thickness: 2,
+                                        ),
+                                        Text(
+                                            time == 'Unknown'
+                                                ? time
+                                                : time + ' away',
+                                            style: TextStyle(fontSize: 18))
+                                      ],
+                                    ),
                                   ),
-                                  Text(
-                                      time == 'Unknown' ? time : time + ' away',
-                                      style: TextStyle(fontSize: 18))
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10),
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: AutoSizeText(
+                                        originAddress,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 18),
+                                        maxLines: 5,
+                                      ),
+                                    ),
+                                  ),
+                                  ListTile(
+                                    contentPadding: EdgeInsets.only(left: 0),
+                                    leading: CircleAvatar(
+                                      backgroundImage:
+                                          ExactAssetImage('assets/niza.jpg'),
+                                    ),
+                                    onTap: () {
+                                      launchURL('tel: $phoneNumber');
+                                    },
+                                    title: Text(
+                                      'Undie Ebenezer',
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                    subtitle: Text(
+                                      phoneNumber,
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white),
+                                    ),
+                                    trailing: Icon(
+                                      Icons.phone,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: AutoSizeText(
-                                  originAddress,
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 18),
-                                  maxLines: 5,
-                                ),
-                              ),
-                            ),
-                            ListTile(
-                              contentPadding: EdgeInsets.only(left: 0),
-                              leading: CircleAvatar(
-                                backgroundImage:
-                                    ExactAssetImage('assets/niza.jpg'),
-                              ),
-                              onTap: () {
-                                launchURL('tel: $phoneNumber');
-                              },
-                              title: Text(
-                                'Undie Ebenezer',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              subtitle: Text(
-                                phoneNumber,
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.white),
-                              ),
-                              trailing: Icon(
-                                Icons.phone,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                          ),
                   ],
                 );
         case LocationPermission.denied:
@@ -377,9 +385,9 @@ class _TrackRiderState extends State<TrackRider> with AutomaticKeepAliveClientMi
                       InkWell(
                         onTap: () async {
                           if (_permissionGranted == LocationPermission.denied) {
-                            _permissionGranted = await Geolocator.requestPermission();
-                            setState(() {
-                            });
+                            _permissionGranted =
+                                await Geolocator.requestPermission();
+                            setState(() {});
                           } else {
                             await Geolocator.openAppSettings();
                           }

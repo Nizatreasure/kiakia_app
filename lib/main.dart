@@ -20,6 +20,7 @@ class _MyAppState extends State<MyApp> {
   bool _initialized = false;
   bool _error = false;
 
+  //initializes firebase functionality into the application
   void initializeFlutterFire() async {
     try {
       await Firebase.initializeApp();
@@ -61,12 +62,17 @@ class _MyAppState extends State<MyApp> {
             child: CircularProgressIndicator(),
           ));
     }
+
+    //returns the application when flutterFire has been successfully initialized
     return MultiProvider(
       providers: [
+        //this makes the user stream value available across all pages in the application
         StreamProvider<User>.value(
           value: AuthenticationService().user,
         ),
       ],
+
+      //wraps the entire application to ensure that all textfields lose focus when the user taps on any non-clickable element
       child: GestureDetector(
         onTap: () {
           //removes focus from any currently focused textField when a user clicks on a whitespace
@@ -87,7 +93,9 @@ class _MyAppState extends State<MyApp> {
 class Wrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    if (Provider.of<User>(context) == null && FirebaseAuth.instance.currentUser == null) {
+    //decides whether to show the home or sign in page depending on the information it receives from the user stream
+    if (Provider.of<User>(context) == null &&
+        FirebaseAuth.instance.currentUser == null) {
       return Authenticate();
     } else {
       return Dashboard();

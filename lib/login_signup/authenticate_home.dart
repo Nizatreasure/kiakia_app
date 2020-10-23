@@ -16,9 +16,10 @@ class AuthenticationHome extends StatelessWidget {
         builder: (context, viewportConstraint) {
           return SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: viewportConstraint.maxHeight),
+              constraints:
+                  BoxConstraints(minHeight: viewportConstraint.maxHeight),
               child: IntrinsicHeight(
-                child:  Column(
+                child: Column(
                   children: [
                     Spacer(
                       flex: 5,
@@ -37,13 +38,16 @@ class AuthenticationHome extends StatelessWidget {
                     // this container displays the signUp button and is wrapped with InkWell to make it clickable
                     InkWell(
                       onTap: () {
-                       togglePage(2);
+                        togglePage(2);
                       },
                       child: Container(
                         width: width,
                         height: 50,
                         alignment: Alignment.center,
-                        margin: width> 500 ? EdgeInsets.symmetric(horizontal: 50, vertical: 10): EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                        margin: width > 500
+                            ? EdgeInsets.symmetric(horizontal: 50, vertical: 10)
+                            : EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 10),
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             color: Color.fromRGBO(15, 125, 188, 1)),
@@ -66,11 +70,15 @@ class AuthenticationHome extends StatelessWidget {
                         width: width,
                         height: 50,
                         alignment: Alignment.center,
-                        margin: width> 500 ? EdgeInsets.symmetric(horizontal: 50, vertical: 10): EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                        margin: width > 500
+                            ? EdgeInsets.symmetric(horizontal: 50, vertical: 10)
+                            : EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 10),
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Color.fromRGBO(77, 172, 246, 1), width: 2)),
+                                color: Color.fromRGBO(77, 172, 246, 1),
+                                width: 2)),
                         child: Text(
                           'Log In',
                           style: TextStyle(

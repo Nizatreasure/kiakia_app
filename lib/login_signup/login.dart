@@ -47,23 +47,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    //gets the width of the current device from mediaQuery
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.white,
-//      appBar: AppBar(
-//        backgroundColor: Colors.white,
-//        leading: IconButton(
-//          icon: Icon(
-//            Icons.keyboard_arrow_left,
-//            color: Colors.black,
-//            size: 30,
-//          ),
-//          onPressed: () {
-//            Navigator.pop(context);
-//          },
-//        ),
-//        elevation: 0,
-//      ),
       body: SafeArea(
         child: Padding(
             padding: width > 500
@@ -178,11 +165,14 @@ class _LoginPageState extends State<LoginPage> {
                                   padding: const EdgeInsets.only(left: 8.0),
                                   child: InkWell(
                                     onTap: () {
+                                      //displays a pop up where registered users can reset their password
                                       forgotPasswordPopUp(context);
                                     },
-                                    child: Text('Forgot Password?',
-                                        style: TextStyle(
-                                            color: Colors.blue, fontSize: 14)),
+                                    child: Text(
+                                      'Forgot Password?',
+                                      style: TextStyle(
+                                          color: Colors.blue, fontSize: 14),
+                                    ),
                                   ),
                                 ),
                                 SizedBox(
@@ -190,30 +180,32 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 InkWell(
                                   onTap: () async {
-                                    errorMessage =
-                                        ''; //resets the error message to an empty string
+                                    //resets the error message to an empty string
+                                    errorMessage = '';
+                                    //this code would unFocus any textField when the button is clicked
                                     if (!FocusScope.of(context)
-                                            .hasPrimaryFocus && //this code would unFocus any textField when the button is clicked
+                                            .hasPrimaryFocus &&
                                         FocusScope.of(context).focusedChild !=
                                             null) {
                                       FocusScope.of(context)
                                           .focusedChild
                                           .unfocus();
-                                    }
-
-                                    if (_formKey.currentState.validate()) {
-                                      setState(() {
-                                        showLoaderAndError = true;
-                                        showLoader = true;
-                                      });
-                                      dynamic result = await _auth
-                                          .signInWithEmailAndPassword(
-                                              password: password, email: email);
-                                      setState(() {
-                                        showLoader = false;
-                                      });
-                                      if (result == null) {
-                                        errorMessage = _auth.error;
+                                      //attempts to sign in the user if the form is validated. displays an error message if an error occured
+                                      if (_formKey.currentState.validate()) {
+                                        setState(() {
+                                          showLoaderAndError = true;
+                                          showLoader = true;
+                                        });
+                                        dynamic result = await _auth
+                                            .signInWithEmailAndPassword(
+                                                password: password,
+                                                email: email);
+                                        setState(() {
+                                          showLoader = false;
+                                        });
+                                        if (result == null) {
+                                          errorMessage = _auth.error;
+                                        }
                                       }
                                     }
                                   },
@@ -264,7 +256,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 InkWell(
                                     onTap: () {
-                                    widget.togglePage(2);
+                                      widget.togglePage(2);
                                     },
                                     child: Text(
                                       'Sign Up',
@@ -290,10 +282,10 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  //builds the dialog box for resetting password
+  //builds the dialog box for resetting user password when the forgot password button is pressed
   forgotPasswordPopUp(BuildContext myContext) {
     final _resetFormKey = GlobalKey<FormState>();
-    String resetEmail, resetError  = '';
+    String resetEmail, resetError = '';
     bool showLoaderAndResetError = false, showResetLoader = false;
     return showDialog(
         context: context,
@@ -340,16 +332,19 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 showLoaderAndResetError
                     ? Center(
-                  child: showResetLoader
-                      ? Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: CircularProgressIndicator(),
-                  )
-                      : Text(
-                    resetError, textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.red,),
-                  ),
-                )
+                        child: showResetLoader
+                            ? Padding(
+                                padding: const EdgeInsets.only(bottom: 20),
+                                child: CircularProgressIndicator(),
+                              )
+                            : Text(
+                                resetError,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.red,
+                                ),
+                              ),
+                      )
                     : Text(''),
                 Row(
                   children: [
@@ -370,21 +365,21 @@ class _LoginPageState extends State<LoginPage> {
                               showLoaderAndResetError = true;
                               showResetLoader = true;
                             });
-                             dynamic result = await _auth.resetUserPassword(resetEmail);
+                            dynamic result =
+                                await _auth.resetUserPassword(resetEmail);
                             setState(() {
                               showResetLoader = false;
                             });
-                             if (result == null) {
-                               setState(() {
-                                 resetError = _auth.error;
-                               });
-                             }
-                             else {
-                               Navigator.pop(context);
-                               successfulPasswordResetMail(email: resetEmail, context: myContext);
-                             }
+                            if (result == null) {
+                              setState(() {
+                                resetError = _auth.error;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                              successfulPasswordResetMail(
+                                  email: resetEmail, context: myContext);
+                            }
                           }
-
                         },
                         child: Text(
                           'Reset password',
@@ -397,19 +392,35 @@ class _LoginPageState extends State<LoginPage> {
           );
         }));
   }
+
+
+  //shows a dialog if a password reset mail has been sent to the user
   successfulPasswordResetMail({String email, BuildContext context}) {
-    return showDialog(context: context,
-    barrierDismissible: false,
-    child: AlertDialog(
-      content: RichText(text: TextSpan(style: TextStyle(fontSize: 16, color: Colors.black), children: [
-        TextSpan(text: 'A password reset mail has been sent to '),
-        TextSpan(text: email, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
-      ]),),
-      actions: [
-        FlatButton(onPressed: () {
-          Navigator.pop(context);
-        }, child: Text('OK', style: TextStyle(fontSize: 17),))
-      ],
-    ));
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        child: AlertDialog(
+          content: RichText(
+            text: TextSpan(
+                style: TextStyle(fontSize: 16, color: Colors.black),
+                children: [
+                  TextSpan(text: 'A password reset mail has been sent to '),
+                  TextSpan(
+                      text: email,
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
+                ]),
+          ),
+          actions: [
+            FlatButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'OK',
+                  style: TextStyle(fontSize: 17),
+                ))
+          ],
+        ));
   }
 }

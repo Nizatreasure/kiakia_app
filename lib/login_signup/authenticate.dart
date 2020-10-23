@@ -12,15 +12,16 @@ class Authenticate extends StatefulWidget {
 class _AuthenticateState extends State<Authenticate> {
   int id;
 
+  //responsible for changing the id
   void togglePages(int page) {
     setState(() {
       id = page;
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
+    //decides whether to show the authentication home page, the sign up page or the log in page depending on the current id
     if (id == 1) return LoginPage(togglePages);
     if (id == 2) return SignUp(togglePages);
     return AuthenticationHome(togglePages);
