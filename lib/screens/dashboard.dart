@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/home.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/order.dart';
@@ -52,19 +53,26 @@ class _DashboardState extends State<Dashboard> {
   }
 
   //gets the user information from the database, listens for changes in the data and stores it locally
-  getUserInformation() {
-    final uid = FirebaseAuth.instance.currentUser.uid;
-    final DatabaseReference database = FirebaseDatabase.instance.reference();
-    userDataStream = database.child('users').child(uid).onValue.listen((event) {
-      Map snap = event.snapshot.value;
-      if (snap.isNotEmpty) {
-        _saveUserDataToStorage(
-            name: snap['name'],
-            email: snap['email'],
-            number: snap['number'],
-            status: snap['isNumberVerified']);
+  getUserInformation() async {
+    try {
+      var response = await get(Uri.encodeFull('https://www.google.com'));
+      if (response.statusCode == 200) {
+        final uid = FirebaseAuth.instance.currentUser.uid;
+        final DatabaseReference database =
+            FirebaseDatabase.instance.reference();
+        userDataStream =
+            database.child('users').child(uid).onValue.listen((event) {
+          Map snap = event.snapshot.value;
+          if (snap.isNotEmpty) {
+            _saveUserDataToStorage(
+                name: snap['name'],
+                email: snap['email'],
+                number: snap['number'],
+                status: snap['isNumberVerified']);
+          }
+        });
       }
-    });
+    } catch (e) {}
   }
 
   @override

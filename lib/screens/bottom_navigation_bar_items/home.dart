@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart';
 
 class Home extends StatefulWidget {
   final Function switchToOrderPage;
@@ -16,20 +17,25 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   double value = 78; //the value that shows at the center of the gauge
-  bool verifyNumber = false;
 
   //the functions checks if the user's phone number has been verified. if it has not been verified, the verifyNumber variable is set to true and the user is asked to verify their number;
   _isUserVerified() async {
-    final uid = FirebaseAuth.instance.currentUser.uid;
-    final snapshot = await FirebaseDatabase.instance
-        .reference()
-        .child('users')
-        .child(uid)
-        .once();
-    if (snapshot.value['isNumberVerified'] == false) {
-      //shows the dialog asking users whose numbers have not been verified to verify it
-      numberNotVerifiedPopup(snapshot.value['number'], context);
-    }
+    try {
+      //the http request is simulated to know when the user has internet connection before the data is fetched from the database
+      var response = await get(Uri.encodeFull('https://www.google.com'));
+      if (response.statusCode == 200) {
+        final uid = FirebaseAuth.instance.currentUser.uid;
+        final snapshot = await FirebaseDatabase.instance
+            .reference()
+            .child('users')
+            .child(uid)
+            .once();
+        if (snapshot.value['isNumberVerified'] == false) {
+          //shows the dialog asking users whose numbers have not been verified to verify it
+          numberNotVerifiedPopup(snapshot.value['number'], context);
+        }
+      }
+    } catch (e) {}
   }
 
   @override

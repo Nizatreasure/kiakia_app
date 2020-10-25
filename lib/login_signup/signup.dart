@@ -55,24 +55,27 @@ class _SignUpState extends State<SignUp> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: width > 500
-              ? EdgeInsets.symmetric(horizontal: 50.0)
-              : EdgeInsets.symmetric(horizontal: 30.0),
+          padding: EdgeInsets.symmetric(horizontal: 30.0),
           child: LayoutBuilder(
             builder: (context, viewport) {
               return SingleChildScrollView(
+                controller: _scrollController,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: viewport.maxHeight),
                   child: IntrinsicHeight(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: width >= 560
+                          ? CrossAxisAlignment.center
+                          : CrossAxisAlignment.start,
                       children: [
                         Spacer(
                           flex: 3,
                         ),
                         Container(
                           height: 80,
-                          alignment: Alignment.centerLeft,
+                          alignment: width >= 560
+                              ? Alignment.center
+                              : Alignment.centerLeft,
                           child: Text('SignUp',
                               style: TextStyle(
                                   color: Color.fromRGBO(77, 172, 246, 1),
@@ -82,219 +85,229 @@ class _SignUpState extends State<SignUp> {
                         Spacer(
                           flex: 2,
                         ),
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              //creates a formfield where users input their names
-                              TextFormField(
-                                onChanged: (val) {
-                                  name = val.trim();
-                                },
-                                textCapitalization: TextCapitalization.words,
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                textAlignVertical: TextAlignVertical.bottom,
-                                style: TextStyle(
-                                    height: 1.5,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500),
-                                decoration: decoration.copyWith(
-                                    labelText: 'Name',
-                                    hintText: 'Enter your name'),
-                                validator: (val) {
-                                  if (val.trim().isEmpty)
-                                    return 'Field cannot be empty';
-                                  else
-                                    return null;
-                                },
-                              ),
-                              SizedBox(height: 10),
-
-                              //creates the field for entering the user email during signUp
-                              TextFormField(
-                                onChanged: (val) {
-                                  email = val;
-                                },
-                                keyboardType: TextInputType.emailAddress,
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                textAlignVertical: TextAlignVertical.bottom,
-                                style: TextStyle(
-                                    height: 1.5,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500),
-                                decoration: decoration.copyWith(
-                                    labelText: 'Email',
-                                    hintText: 'Enter your email'),
-                                validator: (val) {
-                                  return EmailValidator.validate(
-                                          val.trimRight())
-                                      ? null
-                                      : 'Email is not valid';
-                                },
-                              ),
-                              SizedBox(height: 10),
-
-                              //creates the field for entering mobile phone number during signUp
-                              TextFormField(
-                                controller: _numberController,
-                                onChanged: (val) {
-                                  number = val;
-                                  if (val.length == 11) {
-                                    FocusScope.of(context)
-                                        .focusedChild
-                                        .unfocus();
-                                    _passwordFocusNode.requestFocus();
-                                  }
-                                },
-                                maxLength: 11,
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                textAlignVertical: TextAlignVertical.bottom,
-                                style: TextStyle(
-                                    height: 1.5,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500),
-                                validator: (val) {
-                                  if (val.trim().length != 11) {
-                                    return 'Phone number must be 11 digits long';
-                                  } else
-                                    return null;
-                                },
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(11)
-                                ], //makes the textField receive only digits
-                                decoration: decoration.copyWith(
-                                    labelText: 'Phone Number',
-                                    hintText: 'Enter your phone number',
-                                    counterText: ''),
-                              ),
-                              SizedBox(height: 10),
-
-                              //creates the field for entering password during signUp
-                              TextFormField(
-                                onChanged: (val) {
-                                  password = val;
-                                },
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                textAlignVertical: TextAlignVertical.bottom,
-                                style: TextStyle(
-                                    height: 1.5,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500),
-                                validator: (val) {
-                                  if (val.trim().isEmpty) {
-                                    return 'Password cannot be empty';
-                                  } else if (val.trim().length < 5) {
-                                    return 'Password cannot be less than 5 character';
-                                  } else
-                                    return null;
-                                },
-                                focusNode: _passwordFocusNode,
-                                decoration: decoration.copyWith(
-                                    labelText: 'Password',
-                                    hintText: 'Enter your password',
-                                    suffixIcon: IconButton(
-                                      icon: Icon(Icons.remove_red_eye,
-                                          color: _hidePassword
-                                              ? Color.fromRGBO(138, 136, 136, 1)
-                                              : Color.fromRGBO(
-                                                  15, 125, 188, 1)),
-                                      onPressed: () {
-                                        setState(() {
-                                          _hidePassword = !_hidePassword;
-                                        });
-                                      },
-                                    )),
-                                obscureText: _hidePassword,
-                              ),
-                              SizedBox(
-                                height: 7,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      'Already have an account?',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 7,
-                                    ),
-                                    InkWell(
-                                      onTap: () {
-                                        widget.togglePage(1);
-                                      },
-                                      child: Text(
-                                        'Sign-in',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16,
-                                            color: Colors.blue),
-                                      ),
-                                    ),
-                                  ],
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 500),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                //creates a formfield where users input their names
+                                TextFormField(
+                                  onChanged: (val) {
+                                    name = val.trim();
+                                  },
+                                  textCapitalization: TextCapitalization.words,
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  textAlignVertical: TextAlignVertical.bottom,
+                                  style: TextStyle(
+                                      height: 1.5,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                  decoration: decoration.copyWith(
+                                      labelText: 'Name',
+                                      hintText: 'Enter your name'),
+                                  validator: (val) {
+                                    if (val.trim().isEmpty)
+                                      return 'Field cannot be empty';
+                                    else
+                                      return null;
+                                  },
                                 ),
-                              ),
-                              SizedBox(height: 50),
+                                SizedBox(height: 10),
 
-                              //creates the signUp button
-                              InkWell(
-                                onTap: () async {
-                                  errorMessage =
-                                      ''; //resets the error message to an empty string
-                                  if (!FocusScope.of(context).hasPrimaryFocus &&
-                                      FocusScope.of(context).focusedChild !=
-                                          null) {
-                                    FocusScope.of(context)
-                                        .focusedChild
-                                        .unfocus();
-                                  }
-                                  //attempts to create an account for the user with email and password. displays an error message if an error occurred
-                                  if (_formKey.currentState.validate()) {
-                                    setState(() {
-                                      showLoaderAndError = true;
-                                      showLoader = true;
-                                    });
-                                    dynamic result = await _auth.createAccount(
-                                        password: password,
-                                        number:
-                                            '+234' + number.substring(1, 11),
-                                        email: email,
-                                        name: name);
-                                    if (mounted) {
-                                      setState(() {
-                                        showLoader = false;
-                                      });
+                                //creates the field for entering the user email during signUp
+                                TextFormField(
+                                  onChanged: (val) {
+                                    email = val;
+                                  },
+                                  keyboardType: TextInputType.emailAddress,
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  textAlignVertical: TextAlignVertical.bottom,
+                                  style: TextStyle(
+                                      height: 1.5,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                  decoration: decoration.copyWith(
+                                      labelText: 'Email',
+                                      hintText: 'Enter your email'),
+                                  validator: (val) {
+                                    return EmailValidator.validate(
+                                            val.trimRight())
+                                        ? null
+                                        : 'Email is not valid';
+                                  },
+                                ),
+                                SizedBox(height: 10),
+
+                                //creates the field for entering mobile phone number during signUp
+                                TextFormField(
+                                  controller: _numberController,
+                                  onChanged: (val) {
+                                    number = val;
+                                    if (val.length == 11) {
+                                      FocusScope.of(context)
+                                          .focusedChild
+                                          .unfocus();
+                                      _passwordFocusNode.requestFocus();
                                     }
-                                    if (result == null) {
-                                      errorMessage = _auth.error;
-                                    }
-                                  }
-                                },
-                                child: Container(
-                                  height: 50,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      color: Color.fromRGBO(15, 125, 188, 1)),
-                                  child: Text(
-                                    'SignUp',
-                                    style: TextStyle(
-                                        color: Color.fromRGBO(246, 248, 250, 1),
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600),
+                                  },
+                                  maxLength: 11,
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  textAlignVertical: TextAlignVertical.bottom,
+                                  style: TextStyle(
+                                      height: 1.5,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                  validator: (val) {
+                                    if (val.trim().length != 11) {
+                                      return 'Phone number must be 11 digits long';
+                                    } else
+                                      return null;
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(11)
+                                  ], //makes the textField receive only digits
+                                  decoration: decoration.copyWith(
+                                      labelText: 'Phone Number',
+                                      hintText: 'Enter your phone number',
+                                      counterText: ''),
+                                ),
+                                SizedBox(height: 10),
+
+                                //creates the field for entering password during signUp
+                                TextFormField(
+                                  onChanged: (val) {
+                                    password = val;
+                                  },
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  textAlignVertical: TextAlignVertical.bottom,
+                                  style: TextStyle(
+                                      height: 1.5,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                  validator: (val) {
+                                    if (val.trim().isEmpty) {
+                                      return 'Password cannot be empty';
+                                    } else if (val.trim().length < 5) {
+                                      return 'Password cannot be less than 5 character';
+                                    } else
+                                      return null;
+                                  },
+                                  focusNode: _passwordFocusNode,
+                                  decoration: decoration.copyWith(
+                                      labelText: 'Password',
+                                      hintText: 'Enter your password',
+                                      suffixIcon: IconButton(
+                                        icon: Icon(Icons.remove_red_eye,
+                                            color: _hidePassword
+                                                ? Color.fromRGBO(
+                                                    138, 136, 136, 1)
+                                                : Color.fromRGBO(
+                                                    15, 125, 188, 1)),
+                                        onPressed: () {
+                                          setState(() {
+                                            _hidePassword = !_hidePassword;
+                                          });
+                                        },
+                                      )),
+                                  obscureText: _hidePassword,
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Already have an account?',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 7,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          widget.togglePage(1);
+                                        },
+                                        child: Text(
+                                          'Sign-in',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 17,
+                                              color: Colors.blue),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
+                                SizedBox(height: 50),
+
+                                //creates the signUp button
+                                InkWell(
+                                  onTap: () async {
+                                    errorMessage =
+                                        ''; //resets the error message to an empty string
+                                    if (!FocusScope.of(context)
+                                            .hasPrimaryFocus &&
+                                        FocusScope.of(context).focusedChild !=
+                                            null) {
+                                      FocusScope.of(context)
+                                          .focusedChild
+                                          .unfocus();
+                                    }
+                                    //attempts to create an account for the user with email and password. displays an error message if an error occurred
+                                    if (_formKey.currentState.validate()) {
+                                      setState(() {
+                                        showLoaderAndError = true;
+                                        showLoader = true;
+                                        _scrollController.jumpTo(
+                                            _scrollController
+                                                .position.maxScrollExtent);
+                                      });
+                                      dynamic result =
+                                          await _auth.createAccount(
+                                              password: password,
+                                              number: '+234' +
+                                                  number.substring(1, 11),
+                                              email: email,
+                                              name: name);
+                                      if (mounted) {
+                                        setState(() {
+                                          showLoader = false;
+                                        });
+                                      }
+                                      if (result == null) {
+                                        errorMessage = _auth.error;
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                    height: 50,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: Color.fromRGBO(15, 125, 188, 1)),
+                                    child: Text(
+                                      'SignUp',
+                                      style: TextStyle(
+                                          color:
+                                              Color.fromRGBO(246, 248, 250, 1),
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         showLoaderAndError

@@ -5,6 +5,7 @@ import 'package:flutter/painting.dart';
 import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/login_signup/services/database.dart';
+import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
 
 class AuthenticationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -38,7 +39,7 @@ class AuthenticationService {
   }
 
   //constructs the dialog box where users can enter their otp to be verified
-  Future<void> _showDialog(BuildContext myContext, verId, number) async {
+  Future<void> showOtpDialog(BuildContext myContext, verId, number) async {
     String smsCode, otpError = '';
     bool showLoaderAndError = false, showLoader = false;
     TextEditingController _controller = TextEditingController();
@@ -49,146 +50,149 @@ class AuthenticationService {
         builder: (context) {
           return StatefulBuilder(
             builder: (context, setState) {
-              return Dialog(
+              return customDialog.Dialog(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                              ),
-                              children: [
-                                TextSpan(text: 'An SMS code has been sent to '),
-                                TextSpan(
-                                    text: '0${number.substring(4, 14)}',
-                                    style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold))
-                              ])),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      TextField(
-                        autofocus: true,
-                        controller: _controller,
-                        decoration: decoration.copyWith(
-                            hintText: 'Enter code here',
-                            hintStyle: TextStyle(fontSize: 20)),
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(
-                            fontSize: 24,
-                            letterSpacing: 4,
-                            fontWeight: FontWeight.w500),
-                        onChanged: (val) {
-                          setState(() {
-                            smsCode = val.trim();
-                          });
-                        },
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-
-                      //displays a progress indicator when the verify button is clicked. the loader changes to an error message if an error occurred
-                      showLoaderAndError
-                          ? Center(
-                              child: showLoader
-                                  ? Padding(
-                                      padding: const EdgeInsets.only(top: 10),
-                                      child: CircularProgressIndicator(),
-                                    )
-                                  : Text(
-                                      otpError,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                            )
-                          : Text(''),
-                      SizedBox(
-                        height: 15,
-                      ),
-
-                      //the change number and verify buttons  are created inside a row
-                      Row(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                  child: SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 300),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          FlatButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                changeUserNumber(myContext);
-                              },
-                              child: Text(
-                                'Change Number',
-                                style:
-                                    TextStyle(fontSize: 14, color: Colors.blue),
-                              )),
-                          Spacer(),
-                          FlatButton(
-                              textColor: Colors.blue,
-                              onPressed: _controller.text.trim().length < 4
-                                  ? null
-                                  : () async {
-                                      setState(() {
-                                        showLoaderAndError = true;
-                                        showLoader = true;
-                                      });
-                                      //creates a credential for the user using the otp code inputted
-                                      PhoneAuthCredential credential =
-                                          PhoneAuthProvider.credential(
-                                              verificationId: verId,
-                                              smsCode: smsCode);
-                                      //links the number entered by the user to their current email. it displays an error message if the operation was not successful
-                                      try {
-                                        otpError = '';
-                                        await _auth.currentUser
-                                            .linkWithCredential(credential);
-                                        await FirebaseDatabase.instance
-                                            .reference()
-                                            .child('users')
-                                            .child(_auth.currentUser.uid)
-                                            .update({'isNumberVerified': true});
-                                        Navigator.pop(context);
-                                      } on FirebaseAuthException catch (e) {
-                                        setState(() {
-                                          showLoader = false;
-                                          if (e.code ==
-                                              'credential-already-in-use') {
-                                            otpError =
-                                                'This number is already associated with another user account';
-                                          } else if (e.code ==
-                                              'invalid-verification-code') {
-                                            otpError =
-                                                'Invalid verification code';
-                                          } else if (e.message ==
-                                              'com.google.firebase.FirebaseException: User has already been linked to the given provider.') {
-                                            otpError =
-                                                'A number has already been linked with this account';
-                                          } else
-                                            otpError = 'An error occurred';
-                                        });
+                          RichText(
+                              textAlign: TextAlign.center,
+                              text: TextSpan(
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                        text: 'An SMS code has been sent to '),
+                                    TextSpan(
+                                        text: '0${number.substring(4, 14)}',
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold))
+                                  ])),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          TextField(
+                            autofocus: true,
+                            controller: _controller,
+                            decoration: decoration.copyWith(
+                                hintText: 'Enter code here',
+                                hintStyle: TextStyle(fontSize: 20)),
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(
+                                fontSize: 24,
+                                letterSpacing: 4,
+                                fontWeight: FontWeight.w500),
+                            onChanged: (val) {
+                              setState(() {
+                                smsCode = val.trim();
+                              });
+                            },
+                          ),
 
-                                        return null;
-                                      } catch (e) {
-                                        setState(() {
-                                          otpError = 'An error occurred';
-                                        });
-                                      }
-                                    },
-                              child: Text(
-                                'Verify',
-                                style: TextStyle(fontSize: 17),
-                              )),
+
+                          //displays a progress indicator when the verify button is clicked. the loader changes to an error message if an error occurred
+                          showLoaderAndError
+                              ? Center(
+                                  child: showLoader
+                                      ? Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 10),
+                                          child: CircularProgressIndicator(),
+                                        )
+                                      : Text(
+                                          otpError,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                )
+                              : Text(''),
+
+                          //the change number and verify buttons  are created inside a row
+                          Row(
+                            children: [
+                              FlatButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    changeUserNumber(myContext);
+                                  },
+                                  child: Text(
+                                    'Change Number',
+                                    style: TextStyle(
+                                        fontSize: 14, color: Colors.blue),
+                                  )),
+                              Spacer(),
+                              FlatButton(
+                                  textColor: Colors.blue,
+                                  onPressed: _controller.text.trim().length < 4
+                                      ? null
+                                      : () async {
+                                          setState(() {
+                                            showLoaderAndError = true;
+                                            showLoader = true;
+                                          });
+                                          //creates a credential for the user using the otp code inputted
+                                          PhoneAuthCredential credential =
+                                              PhoneAuthProvider.credential(
+                                                  verificationId: verId,
+                                                  smsCode: smsCode);
+                                          //links the number entered by the user to their current email. it displays an error message if the operation was not successful
+                                          try {
+                                            otpError = '';
+                                            await _auth.currentUser
+                                                .linkWithCredential(credential);
+                                            await FirebaseDatabase.instance
+                                                .reference()
+                                                .child('users')
+                                                .child(_auth.currentUser.uid)
+                                                .update(
+                                                    {'isNumberVerified': true});
+                                            Navigator.pop(context);
+                                          } on FirebaseAuthException catch (e) {
+                                            setState(() {
+                                              showLoader = false;
+                                              if (e.code ==
+                                                  'credential-already-in-use') {
+                                                otpError =
+                                                    'This number is already associated with another user account';
+                                              } else if (e.code ==
+                                                  'invalid-verification-code') {
+                                                otpError =
+                                                    'Invalid verification code';
+                                              } else if (e.message ==
+                                                  'com.google.firebase.FirebaseException: User has already been linked to the given provider.') {
+                                                otpError =
+                                                    'A number has already been linked with this account';
+                                              } else
+                                                otpError = 'An error occurred';
+                                            });
+
+                                            return null;
+                                          } catch (e) {
+                                            setState(() {
+                                              otpError = 'An error occurred';
+                                            });
+                                          }
+                                        },
+                                  child: Text(
+                                    'Verify',
+                                    style: TextStyle(fontSize: 17),
+                                  )),
+                            ],
+                          ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               );
@@ -257,10 +261,11 @@ class AuthenticationService {
             return null;
           },
           codeSent: (verId, int resendToken) async {
+            Navigator.pop(myContext);
             _resendToken = resendToken;
-            _showDialog(myContext, verId, number);
+            showOtpDialog(myContext, verId, number);
           },
-          timeout: Duration(seconds: 60),
+          timeout: Duration(seconds: 30),
           codeAutoRetrievalTimeout: (verificationID) {});
     } on FirebaseAuthException catch (e) {
       if (e.code == 'network-request-failed') {

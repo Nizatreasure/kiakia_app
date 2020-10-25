@@ -52,6 +52,8 @@ dependencies:
   http: ^0.12.2
   auto_size_text: ^2.1.0
   localstorage: ^3.0.3+6
+  flutter_keyboard_visibility: ^3.2.2
+
 
 dev_dependencies:
   flutter_test:
