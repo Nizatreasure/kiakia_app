@@ -29,101 +29,99 @@ class MyDrawer extends StatelessWidget {
       email = data['email'];
     }
 
-    return Container(
-      width: 300,
-      child: Drawer(
-        child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(
-                child: ListView(
-                  children: [
-                    SizedBox(
-                      height: 190,
-                      child: data == null
-                          ? Container(
-                              color: Color.fromRGBO(77, 172, 246, 1),
-                            )
-                          : InkWell(
-                              onTap: () {
-                                Navigator.pop(context);
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => Profile()));
-                              },
-                              child: DrawerHeader(
-                                  decoration: BoxDecoration(
-                                      color: Color.fromRGBO(77, 172, 246, 1)),
-                                  child: Column(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 30,
-                                        child: Text(
-                                          name[0],
-                                          style: TextStyle(
-                                            fontSize: 40,
-                                            fontWeight: FontWeight.w400,
-                                          ),
+    return Drawer(
+      child: SafeArea(
+        child: Row(
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  SizedBox(
+                    height: 190,
+                    child: data == null
+                        ? Container(
+                            color: Color.fromRGBO(77, 172, 246, 1),
+                          )
+                        : InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Profile()));
+                            },
+                            child: DrawerHeader(
+                                decoration: BoxDecoration(
+                                    color: Color.fromRGBO(77, 172, 246, 1)),
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 30,
+                                      child: Text(
+                                        name[0],
+                                        style: TextStyle(
+                                          fontSize: 40,
+                                          fontWeight: FontWeight.w400,
                                         ),
                                       ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Text(
-                                        name,
-                                        style: TextStyle(
-                                            fontSize: 23,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Text(
-                                        email,
-                                        style: TextStyle(
-                                            color: Colors.black54, fontSize: 15),
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Number: 0${number.substring(4, 14)}',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color:
-                                                  Color.fromRGBO(10, 10, 10, 0.7),
-                                            ),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      name,
+                                      style: TextStyle(
+                                          fontSize: 23,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      email,
+                                      style: TextStyle(
+                                          color: Colors.black54, fontSize: 15),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Number: 0${number.substring(4, 14)}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            color:
+                                                Color.fromRGBO(10, 10, 10, 0.7),
                                           ),
-                                          Text(
-                                            'Status: $verificationStatus',
-                                            style: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    225, 220, 190, 0.8)),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  )),
-                            ),
-                    ),
-                  ],
-                ),
+                                        ),
+                                        Text(
+                                          'Status: $verificationStatus',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                              color: Color.fromRGBO(
+                                                  225, 220, 190, 0.8)),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                )),
+                          ),
+                  ),
+                ],
               ),
-              if (keepDrawerOpen)
-                VerticalDivider(
-                  width: 2,
-                  color: Colors.grey[300],
-                  thickness: 2,
-                ),
-            ],
-          ),
+            ),
+            if (keepDrawerOpen)
+              VerticalDivider(
+                width: 2,
+                color: Colors.grey[300],
+                thickness: 2,
+              ),
+          ],
         ),
       ),
     );
