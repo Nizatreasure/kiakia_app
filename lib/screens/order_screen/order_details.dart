@@ -212,54 +212,68 @@ class _OrderDetailsState extends State<OrderDetails> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.2,
           ),
-          InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Container(
-              width: width,
-              height: 50,
-              alignment: Alignment.center,
-              margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color: Color.fromRGBO(77, 172, 246, 1), width: 2)),
-              child: Text(
-                'Cancel Order',
-                style: TextStyle(
-                    color: Color.fromRGBO(77, 172, 246, 1),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600),
+
+          //for wide screens, the buttons are shown in a row, white they are show in a column for small screens
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: 50,
+                    alignment: Alignment.center,
+                    margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Color.fromRGBO(77, 172, 246, 1), width: 2)),
+                    child: Text(
+                      'Cancel Order',
+                      style: TextStyle(
+                          color: Color.fromRGBO(77, 172, 246, 1),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              if (width >= 780)
+                Expanded(
+                  child: payNowButton(context),
+                ),
+            ],
           ),
-          InkWell(
-            onTap: () {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => OrderReceived()));
-            },
-            child: Container(
-              width: width,
-              height: 50,
-              alignment: Alignment.center,
-              margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Color.fromRGBO(77, 172, 246, 1)),
-              child: Text(
-                'Pay Now',
-                style: TextStyle(
-                    color: Color.fromRGBO(246, 248, 250, 1),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
+          if (width < 780) payNowButton(context),
 
           // this container displays the login button and is wrapped with InkWell to make it clickable
         ],
       ),
     );
   }
+}
+
+Widget payNowButton(BuildContext context) {
+  return InkWell(
+    onTap: () {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => OrderReceived()));
+    },
+    child: Container(
+      height: 50,
+      alignment: Alignment.center,
+      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Color.fromRGBO(77, 172, 246, 1)),
+      child: Text(
+        'Pay Now',
+        style: TextStyle(
+            color: Color.fromRGBO(246, 248, 250, 1),
+            fontSize: 20,
+            fontWeight: FontWeight.w600),
+      ),
+    ),
+  );
 }

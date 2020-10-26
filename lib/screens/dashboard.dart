@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
+import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/home.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/order.dart';
 import 'package:kiakia/screens/drawer.dart';
@@ -75,6 +76,11 @@ class _DashboardState extends State<Dashboard> {
     } catch (e) {}
   }
 
+  //this function is called from the homepage and gives the context of the dashboard to the numberNotVerifiedPopup function
+  void showNumberNotVerified (number) {
+    numberNotVerifiedPopup(number, context);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -90,81 +96,99 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    //checks if the width of the device is big enough to keep the drawer open
+    bool keepDrawerOpen = MediaQuery.of(context).size.width >= 700;
     List<Widget> _bottomNavigationBarItemBody = [
-      Home(setCurrentNavigationBarIndex),
+      Home(setCurrentNavigationBarIndex, showNumberNotVerified),
       Order(),
       Container(),
       Container(),
     ];
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Color(0xffffffff),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(
-            Icons.menu,
-            color: Colors.black,
-          ),
-          onPressed: () {
-            _scaffoldKey.currentState.openDrawer();
-          },
+    return Row(children: <Widget>[
+      if (keepDrawerOpen)
+        MyDrawer(
+          userData: snapshot,
+          keepDrawerOpen: true,
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: FlatButton.icon(
+      Expanded(
+        child: Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: Color(0xffffffff),
+          appBar: AppBar(
+            leading: keepDrawerOpen ? null : IconButton(
               icon: Icon(
-                Icons.person,
-                color: Colors.blue,
-                size: 16,
+                Icons.menu,
+                color: Colors.black,
               ),
-              onPressed: () async {
-                await _auth.logOut();
+              onPressed: () {
+                _scaffoldKey.currentState.openDrawer();
               },
-              label: Text(
-                'Logout',
-                style: TextStyle(
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: FlatButton.icon(
+                  icon: Icon(
+                    Icons.person,
                     color: Colors.blue,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14),
-              ),
+                    size: 16,
+                  ),
+                  onPressed: () async {
+                    await _auth.logOut();
+                  },
+                  label: Text(
+                    'Logout',
+                    style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14),
+                  ),
+                ),
+              )
+            ],
+            backgroundColor: Color(0xffffffff),
+            title: Text(
+              _navigationBarTitle[_currentBottomNavigationBarIndex],
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500),
             ),
-          )
-        ],
-        backgroundColor: Color(0xffffffff),
-        title: Text(
-          _navigationBarTitle[_currentBottomNavigationBarIndex],
-          style: TextStyle(
-              color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
+            centerTitle: true,
+            elevation: 0,
+          ),
+          drawer: keepDrawerOpen
+              ? null
+              : MyDrawer(
+                  userData: snapshot,
+                  keepDrawerOpen: false,
+                ),
+          body: _bottomNavigationBarItemBody[_currentBottomNavigationBarIndex],
+          bottomNavigationBar: BottomNavigationBar(
+              unselectedItemColor: Color.fromRGBO(166, 170, 180, 1),
+              selectedItemColor: Color.fromRGBO(77, 172, 246, 1),
+              showUnselectedLabels: true,
+              currentIndex: _currentBottomNavigationBarIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentBottomNavigationBarIndex = index;
+                });
+              },
+              type: BottomNavigationBarType.fixed,
+              items: [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.library_books), label: 'Order'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.credit_card), label: 'Wallet'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.settings), label: 'Settings')
+              ]),
         ),
-        centerTitle: true,
-        elevation: 0,
       ),
-      drawer: MyDrawer(snapshot),
-      body: _bottomNavigationBarItemBody[_currentBottomNavigationBarIndex],
-      bottomNavigationBar: BottomNavigationBar(
-          unselectedItemColor: Color.fromRGBO(166, 170, 180, 1),
-          selectedItemColor: Color.fromRGBO(77, 172, 246, 1),
-          showUnselectedLabels: true,
-          currentIndex: _currentBottomNavigationBarIndex,
-          onTap: (index) {
-            setState(() {
-              _currentBottomNavigationBarIndex = index;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.library_books), label: 'Order'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.credit_card), label: 'Wallet'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.settings), label: 'Settings')
-          ]),
-    );
+    ]);
   }
 }

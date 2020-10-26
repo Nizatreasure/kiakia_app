@@ -84,6 +84,9 @@ class _MyAppState extends State<MyApp> {
         },
         child: MaterialApp(
           home: Wrapper(),
+          theme: ThemeData(
+            primaryColor: Color(0xff0F7DBC),
+          ),
         ),
       ),
     );

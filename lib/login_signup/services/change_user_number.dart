@@ -9,85 +9,93 @@ import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
 //creates a dialog box asking a user to enter a new number
 Future<void> changeUserNumber(BuildContext myContext) async {
   String number;
+  int  numLength = 0;
   final _changeNumberFormKey = GlobalKey<FormState>();
   return showDialog<void>(
       context: myContext,
       barrierDismissible: false,
       builder: (context) {
-        return customDialog.Dialog(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 300),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Enter New Number',
-                      style: TextStyle(fontSize: 17),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Form(
-                        key: _changeNumberFormKey,
-                        child: TextFormField(
-                          style: TextStyle(
-                              height: 1.5,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500),
-                          decoration: decoration.copyWith(
-                              hintText: 'Enter number here', counterText: ''),
-                          validator: (val) {
-                            if (val.trim().length != 11) {
-                              return 'Phone number must be 11 digits long';
-                            } else
-                              return null;
-                          },
-                          keyboardType: TextInputType.number,
-                          autofocus: true,
-                          maxLength: 11,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          onChanged: (val) {
-                            number = val;
-                            if (val.length == 11) {
-                              FocusScope.of(context).focusedChild.unfocus();
-                            }
-                          },
-                        )),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Row(
-                      children: [
-                        Spacer(),
-                        FlatButton(
-                            onPressed: () async {
-                              if (_changeNumberFormKey.currentState
-                                  .validate()) {
-                                Navigator.pop(context);
-                                await updateUserNumberDetails(
-                                    number, myContext);
+        return StatefulBuilder(
+          builder: (context, setState) {
+          return customDialog.Dialog(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 300),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Enter New Number',
+                        style: TextStyle(fontSize: 17),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Form(
+                          key: _changeNumberFormKey,
+                          child: TextFormField(
+                            style: TextStyle(
+                                height: 1.5,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500),
+                            decoration: decoration.copyWith(
+                                hintText: 'Enter number here', counterText: ''),
+                            validator: (val) {
+                              if (val.trim().length != 11) {
+                                return 'Phone number must be 11 digits long';
+                              } else
+                                return null;
+                            },
+                            keyboardType: TextInputType.number,
+                            autofocus: true,
+                            maxLength: 11,
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            onChanged: (val) {
+                              setState(() {
+                                number = val;
+                                numLength = val.length;
+                              });
+                              if (val.length == 11) {
+                                FocusScope.of(context).focusedChild.unfocus();
                               }
                             },
-                            child: Text(
-                              'Done',
-                              style: TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold),
-                            ))
-                      ],
-                    ),
-                  ],
+                          )),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Row(
+                        children: [
+                          Spacer(),
+                          FlatButton(
+                              textColor: Colors.blue,
+                              onPressed: numLength != 11 ? null : () async {
+                                if (_changeNumberFormKey.currentState
+                                    .validate()) {
+                                  Navigator.pop(context);
+                                  await updateUserNumberDetails(
+                                      number, myContext);
+                                }
+                              },
+                              child: Text(
+                                'Done',
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold),
+                              ))
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
+          );
+            }
         );
       });
 }

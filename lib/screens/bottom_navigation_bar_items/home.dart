@@ -8,9 +8,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart';
 
 class Home extends StatefulWidget {
+  //receives the function for switching from home to order page when a user clicks on quick order
   final Function switchToOrderPage;
+
+  //calls the function that would display the number not verified popup for unverified users.
+  // This is to ensure that the popUp receives the dashboard context and still shows even if the user has navigated away from the home page
+  final Function numberNotVerified;
   Home(
-      this.switchToOrderPage); //constructor that receives the function for switching from home to order page when a user clicks on quick order
+      this.switchToOrderPage, this.numberNotVerified);
   @override
   _HomeState createState() => _HomeState();
 }
@@ -18,7 +23,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   double value = 78; //the value that shows at the center of the gauge
 
-  //the functions checks if the user's phone number has been verified. if it has not been verified, the verifyNumber variable is set to true and the user is asked to verify their number;
+  //the functions checks if the user's phone number has been verified. if it has not been verified,
+  // the verifyNumber variable is set to true and the user is asked to verify their number;
   _isUserVerified() async {
     try {
       //the http request is simulated to know when the user has internet connection before the data is fetched from the database
@@ -32,7 +38,7 @@ class _HomeState extends State<Home> {
             .once();
         if (snapshot.value['isNumberVerified'] == false) {
           //shows the dialog asking users whose numbers have not been verified to verify it
-          numberNotVerifiedPopup(snapshot.value['number'], context);
+          widget.numberNotVerified(snapshot.value['number']);
         }
       }
     } catch (e) {}
@@ -115,7 +121,7 @@ class _HomeState extends State<Home> {
               height: 50,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  color: Color.fromRGBO(15, 125, 188, 1)),
+                  color: Theme.of(context).primaryColor),
               child: Text(
                 'Quick Order',
                 style: TextStyle(
