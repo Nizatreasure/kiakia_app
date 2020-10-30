@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:kiakia/login_signup/authenticate.dart';
+import 'package:kiakia/login_signup/login.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/screens/dashboard.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -41,6 +44,11 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_error) {
       return Container(
@@ -64,6 +72,8 @@ class _MyAppState extends State<MyApp> {
     }
 
     //returns the application when flutterFire has been successfully initialized
+    // if (FirebaseAuth.instance.currentUser != null)
+    //   FirebaseAuth.instance.signOut();
     return MultiProvider(
       providers: [
         //this makes the user stream value available across all pages in the application
@@ -84,24 +94,59 @@ class _MyAppState extends State<MyApp> {
         },
         child: MaterialApp(
           home: Wrapper(),
-          theme: ThemeData(
-            primaryColor: Color(0xff0F7DBC),
-          ),
         ),
       ),
     );
   }
 }
 
-class Wrapper extends StatelessWidget {
+class Wrapper extends StatefulWidget {
+  @override
+  _WrapperState createState() => _WrapperState();
+}
+
+class _WrapperState extends State<Wrapper> {
+  final storage = new LocalStorage('user_data.json');
+  Map userData = {};
+
+  //query the local storage to find out if the user has stored data
+  //if data is stored, the user is taken directly to the login page
+  _checkUserData() async {
+    await storage.ready;
+    userData = await storage.getItem('userData');
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
+    _checkUserData();
     //decides whether to show the home or sign in page depending on the information it receives from the user stream
     if (Provider.of<User>(context) == null &&
         FirebaseAuth.instance.currentUser == null) {
-      return Authenticate();
-    } else {
+      if (userData == null)
+        return Authenticate();
+      else if (userData.isEmpty) {
+        return Container(
+          color: Colors.white,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      } else
+        return Authenticate(
+          id: 1,
+          data: userData,
+        );
+    } else if (Provider.of<User>(context) != null &&
+        FirebaseAuth.instance.currentUser != null) {
       return Dashboard();
+    } else {
+      return Container(
+        color: Colors.white,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
   }
 }

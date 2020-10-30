@@ -8,12 +8,15 @@ class DatabaseService {
   final DatabaseReference users = FirebaseDatabase.instance.reference();
 
   //creates a document for the user in the database during signUp
-  Future createUser({name, number, email}) async {
+  Future createUser({name, number, email, url, isNumberVerified, provider}) async {
     return await users.child('users').child(uid).set({
       'name': name,
-      'number': number,
-      'isNumberVerified': false,
-      'email': email
+      'number': number ?? '',
+      'isNumberVerified': isNumberVerified,
+      'provider': provider,
+      'email': email,
+      'pictureURL': url ?? '',
     });
+    //TODO: remember to remove the pass
   }
 }

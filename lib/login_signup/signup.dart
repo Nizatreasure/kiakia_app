@@ -1,4 +1,5 @@
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kiakia/login_signup/decoration.dart';
@@ -39,6 +40,22 @@ class _SignUpState extends State<SignUp> {
     _scrollController = new ScrollController();
     _scrollController.addListener(() {});
     _numberController.addListener(() {});
+  }
+
+  //queries the database to ensure that a number can also be used to sign up once.
+  //returns false if the number exists and true if it doesn't exist in the database
+  Future<bool> _numberNotUsedByAnotherClient(String num) async {
+    List userNumbers = new List();
+    DataSnapshot snapshot =
+        await FirebaseDatabase.instance.reference().child('users').once();
+    if (snapshot != null) {
+      Map data = snapshot.value;
+      data.forEach((key, value) {
+        userNumbers.add(value['number']);
+      });
+      return userNumbers.contains('+234' + num.substring(1, 11)) ? false : true;
+    } else
+      return true;
   }
 
   @override
@@ -236,7 +253,7 @@ class _SignUpState extends State<SignUp> {
                                       ),
                                       InkWell(
                                         onTap: () {
-                                          widget.togglePage(1);
+                                          widget.togglePage(2);
                                         },
                                         child: Text(
                                           'Sign-in',
@@ -273,20 +290,31 @@ class _SignUpState extends State<SignUp> {
                                             _scrollController
                                                 .position.maxScrollExtent);
                                       });
-                                      dynamic result =
-                                          await _auth.createAccount(
-                                              password: password,
-                                              number: '+234' +
-                                                  number.substring(1, 11),
-                                              email: email,
-                                              name: name);
-                                      if (mounted) {
-                                        setState(() {
-                                          showLoader = false;
-                                        });
-                                      }
-                                      if (result == null) {
-                                        errorMessage = _auth.error;
+                                      if (await _numberNotUsedByAnotherClient(
+                                          number)) {
+                                        dynamic result =
+                                            await _auth.createAccount(
+                                                password: password,
+                                                number: '+234' +
+                                                    number.substring(1, 11),
+                                                email: email,
+                                                name: name,
+                                                isNumberVerified: false);
+                                        if (mounted) {
+                                          setState(() {
+                                            showLoader = false;
+                                          });
+                                        }
+                                        if (result == null) {
+                                          errorMessage = _auth.error;
+                                        }
+                                      } else {
+                                        if (mounted)
+                                          setState(() {
+                                            showLoader = false;
+                                            errorMessage =
+                                                'Number already used';
+                                          });
                                       }
                                     }
                                   },

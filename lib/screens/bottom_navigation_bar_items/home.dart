@@ -13,8 +13,10 @@ class Home extends StatefulWidget {
   //calls the function that would display the number not verified popup for unverified users.
   // This is to ensure that the popUp receives the dashboard context and still shows even if the user has navigated away from the home page
   final Function numberNotVerified;
-  Home(
-      this.switchToOrderPage, this.numberNotVerified);
+
+  //calls the function that tells new users who have not added a phone number to add one
+  final Function addNumber;
+  Home(this.switchToOrderPage, this.numberNotVerified, this.addNumber);
   @override
   _HomeState createState() => _HomeState();
 }
@@ -25,22 +27,22 @@ class _HomeState extends State<Home> {
   //the functions checks if the user's phone number has been verified. if it has not been verified,
   // the verifyNumber variable is set to true and the user is asked to verify their number;
   _isUserVerified() async {
-    try {
-      //the http request is simulated to know when the user has internet connection before the data is fetched from the database
-      var response = await get(Uri.encodeFull('https://www.google.com'));
-      if (response.statusCode == 200) {
         final uid = FirebaseAuth.instance.currentUser.uid;
+        await Future.delayed(Duration(seconds: 5));
         final snapshot = await FirebaseDatabase.instance
             .reference()
             .child('users')
             .child(uid)
             .once();
-        if (snapshot.value['isNumberVerified'] == false) {
+        if (snapshot.value['number'] == '') {
+          widget.addNumber();
+        }
+        if (snapshot.value['number'] != '' &&
+            snapshot.value['isNumberVerified'] == false) {
           //shows the dialog asking users whose numbers have not been verified to verify it
           widget.numberNotVerified(snapshot.value['number']);
         }
-      }
-    } catch (e) {}
+
   }
 
   @override
@@ -94,7 +96,8 @@ class _HomeState extends State<Home> {
                               angle: 90,
                               widget: Text(
                                 '${value.round()}%',
-                                style: TextStyle(fontSize: 36),
+                                style: TextStyle(
+                                    fontSize: 36, color: Colors.black),
                               ))
                         ]),
                   ],

@@ -6,17 +6,32 @@ import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
 
+//the function checks that the number the user is registering is unique
+Future<bool> _numberNotUsedByAnotherClient(String num) async {
+  List userNumbers = new List();
+  DataSnapshot snapshot =
+      await FirebaseDatabase.instance.reference().child('users').once();
+  if (snapshot != null) {
+    Map data = snapshot.value;
+    data.forEach((key, value) {
+      userNumbers.add(value['number']);
+    });
+    return userNumbers.contains('+234' + num.substring(1, 11)) ? false : true;
+  } else
+    return true;
+}
+
 //creates a dialog box asking a user to enter a new number
-Future<void> changeUserNumber(BuildContext myContext) async {
-  String number;
-  int  numLength = 0;
+Future<void> changeUserNumber(BuildContext myContext, String text) async {
+  String number, error = '';
+  int numLength = 0;
   final _changeNumberFormKey = GlobalKey<FormState>();
+  bool showLoaderAndError = false, showLoader = false;
   return showDialog<void>(
       context: myContext,
       barrierDismissible: false,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
+        return StatefulBuilder(builder: (context, setState) {
           return customDialog.Dialog(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
@@ -27,8 +42,12 @@ Future<void> changeUserNumber(BuildContext myContext) async {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Enter New Number',
-                        style: TextStyle(fontSize: 17),
+                        text,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 17,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400),
                       ),
                       SizedBox(
                         height: 10,
@@ -51,7 +70,8 @@ Future<void> changeUserNumber(BuildContext myContext) async {
                             keyboardType: TextInputType.number,
                             autofocus: true,
                             maxLength: 11,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly
                             ],
@@ -59,6 +79,7 @@ Future<void> changeUserNumber(BuildContext myContext) async {
                               setState(() {
                                 number = val;
                                 numLength = val.length;
+                                error = '';
                               });
                               if (val.length == 11) {
                                 FocusScope.of(context).focusedChild.unfocus();
@@ -68,24 +89,54 @@ Future<void> changeUserNumber(BuildContext myContext) async {
                       SizedBox(
                         height: 5,
                       ),
+                      showLoaderAndError
+                          ? Center(
+                              child: showLoader
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 10),
+                                      child: CircularProgressIndicator(),
+                                    )
+                                  : Text(
+                                      error,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                            )
+                          : Text(''),
                       Row(
                         children: [
                           Spacer(),
                           FlatButton(
                               textColor: Colors.blue,
-                              onPressed: numLength != 11 ? null : () async {
-                                if (_changeNumberFormKey.currentState
-                                    .validate()) {
-                                  Navigator.pop(context);
-                                  await updateUserNumberDetails(
-                                      number, myContext);
-                                }
-                              },
+                              onPressed: numLength != 11
+                                  ? null
+                                  : () async {
+                                      if (_changeNumberFormKey.currentState
+                                          .validate()) {
+                                        setState(() {
+                                          showLoaderAndError = true;
+                                          showLoader = true;
+                                        });
+                                        if (await _numberNotUsedByAnotherClient(
+                                            number)) {
+                                          Navigator.pop(context);
+                                          await updateUserNumberDetails(
+                                              number, myContext);
+                                        } else {
+                                          setState(() {
+                                            showLoader = false;
+                                            error =
+                                                'Number already associated with another user';
+                                          });
+                                        }
+                                      }
+                                    },
                               child: Text(
                                 'Done',
                                 style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold),
+                                    fontSize: 17, fontWeight: FontWeight.bold),
                               ))
                         ],
                       ),
@@ -95,8 +146,7 @@ Future<void> changeUserNumber(BuildContext myContext) async {
               ),
             ),
           );
-            }
-        );
+        });
       });
 }
 

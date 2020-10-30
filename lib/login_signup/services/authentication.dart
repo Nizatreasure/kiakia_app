@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -6,10 +8,12 @@ import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/login_signup/services/database.dart';
 import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthenticationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String error = '';
+  final secureStorage = new FlutterSecureStorage();
 
   //signs in the user with email and password
   Future signInWithEmailAndPassword({email, password}) async {
@@ -17,6 +21,7 @@ class AuthenticationService {
       UserCredential result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       User user = result.user;
+      await secureStorage.write(key: 'password', value: password);
       return user;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'wrong-password') {
@@ -39,7 +44,7 @@ class AuthenticationService {
   }
 
   //constructs the dialog box where users can enter their otp to be verified
-  Future<void> showOtpDialog(BuildContext myContext, verId, number) async {
+  Future<void> showOtpDialog(BuildContext myContext, verId, number, id) async {
     String smsCode, otpError = '';
     bool showLoaderAndError = false, showLoader = false;
     TextEditingController _controller = TextEditingController();
@@ -98,7 +103,6 @@ class AuthenticationService {
                             },
                           ),
 
-
                           //displays a progress indicator when the verify button is clicked. the loader changes to an error message if an error occurred
                           showLoaderAndError
                               ? Center(
@@ -123,11 +127,16 @@ class AuthenticationService {
                             children: [
                               FlatButton(
                                   onPressed: () {
-                                    Navigator.pop(context);
-                                    changeUserNumber(myContext);
+                                    if (id == 1)
+                                      Navigator.pop(context);
+                                    else {
+                                      Navigator.pop(context);
+                                      changeUserNumber(
+                                          myContext, 'Enter New Number');
+                                    }
                                   },
                                   child: Text(
-                                    'Change Number',
+                                    id == 1 ? 'Cancel' : 'Change Number',
                                     style: TextStyle(
                                         fontSize: 14, color: Colors.blue),
                                   )),
@@ -149,15 +158,23 @@ class AuthenticationService {
                                           //links the number entered by the user to their current email. it displays an error message if the operation was not successful
                                           try {
                                             otpError = '';
-                                            await _auth.currentUser
-                                                .linkWithCredential(credential);
-                                            await FirebaseDatabase.instance
-                                                .reference()
-                                                .child('users')
-                                                .child(_auth.currentUser.uid)
-                                                .update(
-                                                    {'isNumberVerified': true});
-                                            Navigator.pop(context);
+                                            if (id == 1) {
+                                              await _auth.signInWithCredential(
+                                                  credential);
+                                              Navigator.pop(context);
+                                            } else {
+                                              await _auth.currentUser
+                                                  .linkWithCredential(
+                                                      credential);
+                                              await FirebaseDatabase.instance
+                                                  .reference()
+                                                  .child('users')
+                                                  .child(_auth.currentUser.uid)
+                                                  .update({
+                                                'isNumberVerified': true
+                                              });
+                                              Navigator.pop(context);
+                                            }
                                           } on FirebaseAuthException catch (e) {
                                             setState(() {
                                               showLoader = false;
@@ -202,15 +219,21 @@ class AuthenticationService {
   }
 
 //creates an account for the user with email and password
-  Future createAccount({email, password, number, name}) async {
+  Future createAccount(
+      {email, password, number, name, isNumberVerified}) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       User user = result.user;
 
       //creates a database document for the user based on their firebase id
-      await DatabaseService(uid: user.uid)
-          .createUser(name: name, number: number, email: email);
+      await DatabaseService(uid: user.uid).createUser(
+          name: name,
+          number: number,
+          email: email,
+          isNumberVerified: isNumberVerified,
+          provider: 'email');
+      await secureStorage.write(key: 'password', value: password);
 
       //updates the firebase display name of the user to the name inputted
       await _auth.currentUser.updateProfile(displayName: name);
@@ -235,20 +258,26 @@ class AuthenticationService {
   }
 
   //the function responsible for initiating the process of  number verification when the user clicks on the 'verify now' button on the pop up
-  Future verifyNumber({number, BuildContext myContext}) async {
+  //an id of 1 logs in users while other ids would link the user credentials
+  Future verifyNumber({number, BuildContext myContext, int id}) async {
     int _resendToken;
     try {
       await _auth.verifyPhoneNumber(
           phoneNumber: number,
           forceResendingToken: _resendToken,
           verificationCompleted: (phoneAuthCredentials) async {
-            await _auth.currentUser.linkWithCredential(phoneAuthCredentials);
-            await FirebaseDatabase.instance
-                .reference()
-                .child('users')
-                .child(_auth.currentUser.uid)
-                .update({'isNumberVerified': true});
-            Navigator.pop(myContext);
+            if (id == 1) {
+              await _auth.signInWithCredential(phoneAuthCredentials);
+              Navigator.pop(myContext);
+            } else {
+              await _auth.currentUser.linkWithCredential(phoneAuthCredentials);
+              await FirebaseDatabase.instance
+                  .reference()
+                  .child('users')
+                  .child(_auth.currentUser.uid)
+                  .update({'isNumberVerified': true});
+              Navigator.pop(myContext);
+            }
           },
           verificationFailed: (FirebaseAuthException e) {
             if (e.code == 'too-many-requests') {
@@ -261,9 +290,9 @@ class AuthenticationService {
             return null;
           },
           codeSent: (verId, int resendToken) async {
-            Navigator.pop(myContext);
+           if (id != 1) Navigator.pop(myContext);
             _resendToken = resendToken;
-            showOtpDialog(myContext, verId, number);
+            showOtpDialog(myContext, verId, number, id);
           },
           timeout: Duration(seconds: 30),
           codeAutoRetrievalTimeout: (verificationID) {});

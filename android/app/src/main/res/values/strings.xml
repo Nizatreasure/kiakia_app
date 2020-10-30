@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">com.mobile.kiakia</string>
+    <string name="facebook_app_id">803134303817462</string>
+    <string name="fb_login_protocol_scheme">fb803134303817462</string>
+
+</resources>

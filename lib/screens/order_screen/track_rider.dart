@@ -280,7 +280,7 @@ class _TrackRiderState extends State<TrackRider>
                           )
                         : Container(
                             width: MediaQuery.of(context).size.width,
-                            constraints: BoxConstraints(maxHeight: 220),
+                            constraints: BoxConstraints(maxHeight: 220, maxWidth: 400),
                             decoration: BoxDecoration(
                                 color: Color.fromRGBO(77, 172, 246, 1),
                                 borderRadius: BorderRadius.only(

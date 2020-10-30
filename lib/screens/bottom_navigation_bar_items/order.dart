@@ -80,8 +80,8 @@ class _OrderState extends State<Order> {
     if (gasSize == 8) cylinderSize[2] = true;
     if (gasSize == 15) cylinderSize[3] = true;
     if (gasSize == 20) cylinderSize[4] = true;
-
     return ListView(
+
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 5.0),
