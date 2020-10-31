@@ -30,43 +30,51 @@ class _AuthenticationHomeState extends State<AuthenticationHome> {
   Widget build(BuildContext context) {
     //get the width of the screen within the context from MediaQuery
     double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Color(0xffffffff),
-      resizeToAvoidBottomInset: false,
-      body: Stack(
+      body: Column(
         children: [
-          PageView(
-              onPageChanged: (val) {
-                setState(() {
-                  currentIndex = val;
-                });
-              },
-              controller: _pageController,
-              children: [
-                landingPageView(
-                    url: 'https://picsum.photos/200/400',
-                    title: 'Easy Ordering',
-                    text: 'Easing ordering of gas at your convenience'),
-                landingPageView(
-                    url: 'https://picsum.photos/200/450',
-                    title: 'Gas is for Everyone',
-                    text: 'Making gas an everybody and everyday product'),
-                landingPageView(
-                    url: 'https://picsum.photos/300/500',
-                    title: 'Clean Energy',
-                    text:
-                        'Everyone can use clean energy no matter where they are'),
-              ]),
+          Expanded(
+            child: PageView(
+                allowImplicitScrolling: true,
+                onPageChanged: (val) {
+                  setState(() {
+                    currentIndex = val;
+                  });
+                },
+                controller: _pageController,
+                children: [
+                  landingPageView(
+                      url: 'https://picsum.photos/200/400',
+                      title: 'Easy Ordering',
+                      text: 'Easing ordering of gas at your convenience'),
+                  landingPageView(
+                      url: 'https://picsum.photos/200/450',
+                      title: 'Gas is for Everyone',
+                      text: 'Making gas an everybody and everyday product'),
+                  landingPageView(
+                      url: 'https://picsum.photos/300/500',
+                      title: 'Clean Energy',
+                      text:
+                          'Everyone can use clean energy no matter where they are'),
+                ]),
+          ),
           //this widget positions the buttons in the page
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
-
-            // the column houses the login and signUp buttons and also the pageView indicator
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.grey[500], Colors.grey[900]],
+                  stops: [0.05, 0.25]),
+            ),
             child: Column(
               children: [
+                SizedBox(
+                  height: 30,
+                ),
                 //the pageView indicators are housed inside the row widget
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -83,7 +91,7 @@ class _AuthenticationHomeState extends State<AuthenticationHome> {
                   ],
                 ),
                 SizedBox(
-                  height: 40,
+                  height: 10,
                 ),
                 // this container displays the signUp button and is wrapped with InkWell to make it clickable
                 InkWell(
@@ -162,11 +170,19 @@ Widget landingPageView(
             children: [
               Text(
                 title,
+                style: TextStyle(
+                    color: Color.fromRGBO(77, 172, 246, 1),
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
               Text(
                 text,
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 21),
               ),
             ],
           ),
@@ -178,8 +194,8 @@ Widget landingPageView(
           gradient: LinearGradient(
               begin: Alignment.center,
               end: Alignment.bottomCenter,
-              colors: [Colors.white.withOpacity(0), Colors.grey[900]],
-              stops: [0, 0.6]),
+              colors: [Colors.white.withOpacity(0), Colors.grey[500]],
+              stops: [0, 0.9]),
         ),
       ),
     ],

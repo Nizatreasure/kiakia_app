@@ -1,10 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:kiakia/login_signup/authenticate.dart';
-import 'package:kiakia/login_signup/login.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/screens/dashboard.dart';
 import 'package:localstorage/localstorage.dart';
@@ -71,9 +69,10 @@ class _MyAppState extends State<MyApp> {
           ));
     }
 
-    //returns the application when flutterFire has been successfully initialized
     // if (FirebaseAuth.instance.currentUser != null)
     //   FirebaseAuth.instance.signOut();
+
+    //returns the application when flutterFire has been successfully initialized
     return MultiProvider(
       providers: [
         //this makes the user stream value available across all pages in the application

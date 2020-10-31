@@ -6,8 +6,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
-import 'package:email_validator/email_validator.dart';
-import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
 import 'package:kiakia/login_signup/services/facebook_google_authentication.dart';
 import 'package:kiakia/login_signup/services/password_reset.dart';
 import 'package:local_auth/local_auth.dart';
@@ -33,14 +31,20 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
   String password = '', errorMessage = '', pass;
   final secureStorage = new FlutterSecureStorage();
   final LocalAuthentication _localAuthentication = LocalAuthentication();
+  bool authenticating = false;
+  bool _biometricsAvailable = false;
 
   //checks if any hardware biometrics is available
   Future<bool> _isBiometricAvailable() async {
     bool isAvailable = false;
     try {
       isAvailable = await _localAuthentication.canCheckBiometrics;
+      setState(() {
+        _biometricsAvailable = isAvailable;
+      });
       return isAvailable;
     } on PlatformException catch (e) {
+      print(e);
       return false;
     }
   }
@@ -49,8 +53,11 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
   Future<void> _getListOfAvailableBiometrics() async {
     try {
       await _localAuthentication.getAvailableBiometrics();
+      print(await _localAuthentication.getAvailableBiometrics());
       if (!mounted) return;
-    } on PlatformException catch (e) {}
+    } on PlatformException catch (e) {
+      print(e);
+    }
   }
 
   //authenticates the user using biometrics
@@ -61,10 +68,22 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
           localizedReason: 'Scan your fingerprint to log in',
           stickyAuth: true,
           useErrorDialogs: true);
+      setState(() {
+      });
       if (isAuthenticated) {
+        setState(() {
+          authenticating = true;
+          showLoader = true;
+          showLoaderAndError = true;
+        });
         dynamic result = await _auth.signInWithEmailAndPassword(
             email: email, password: pass);
         if (result == null) {
+          setState(() {
+            authenticating = false;
+            showLoaderAndError = false;
+            showLoader = false;
+          });
           showDialog(
               context: context,
               builder: (context) {
@@ -97,6 +116,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
   @override
   void initState() {
     super.initState();
+    _isBiometricAvailable();
     _passwordFocusNode = FocusNode();
     _passwordFocusNode.addListener(() {
       //hides the password when a user focus changes from the password field
@@ -120,6 +140,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
   Widget build(BuildContext context) {
     //gets the width of the current device from mediaQuery
     double width = MediaQuery.of(context).size.width;
+    print(MediaQuery.of(context).size.width);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -172,7 +193,9 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                             ),
                           ),
                           Spacer(),
-                          if (widget.data['provider'] == 'email')
+                          if (widget.data['provider'] == 'email' ||
+                              widget.data['provider'] == null ||
+                              widget.data['provider'] == '')
                             ConstrainedBox(
                               constraints: BoxConstraints(maxWidth: 500),
                               child: Form(
@@ -320,10 +343,10 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                     ),
 
                                     //displays a button where the users can click to log in with fingerprint
-                                    Center(
+                                   if (_biometricsAvailable) Center(
                                         child: FlatButton(
                                             color: Colors.blue,
-                                            onPressed: () async {
+                                            onPressed: authenticating ? null : () async {
                                               if (await _isBiometricAvailable()) {
                                                 await _getListOfAvailableBiometrics();
                                                 if (pass != null)

@@ -2,6 +2,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:kiakia/login_signup/decoration.dart';
 import 'package:flutter/services.dart'; //necessary for using inputFormatter to receive numbers only
 import 'package:kiakia/login_signup/services/authentication.dart';
@@ -44,18 +45,26 @@ class _SignUpState extends State<SignUp> {
 
   //queries the database to ensure that a number can also be used to sign up once.
   //returns false if the number exists and true if it doesn't exist in the database
-  Future<bool> _numberNotUsedByAnotherClient(String num) async {
+  Future<String> _numberNotUsedByAnotherClient(String num) async {
     List userNumbers = new List();
-    DataSnapshot snapshot =
-        await FirebaseDatabase.instance.reference().child('users').once();
-    if (snapshot != null) {
-      Map data = snapshot.value;
-      data.forEach((key, value) {
-        userNumbers.add(value['number']);
-      });
-      return userNumbers.contains('+234' + num.substring(1, 11)) ? false : true;
-    } else
-      return true;
+    try {
+      final response = await get('https://www.google.com');
+      if (response.statusCode == 200) {
+        DataSnapshot snapshot =
+            await FirebaseDatabase.instance.reference().child('users').once();
+        if (snapshot != null) {
+          Map data = snapshot.value;
+          data.forEach((key, value) {
+            userNumbers.add(value['number']);
+          });
+        }
+      }
+      return userNumbers.contains('+234' + num.substring(1, 11))
+          ? 'exists'
+          : 'notExist';
+    } catch (e) {
+      return 'network-error';
+    }
   }
 
   @override
@@ -291,7 +300,8 @@ class _SignUpState extends State<SignUp> {
                                                 .position.maxScrollExtent);
                                       });
                                       if (await _numberNotUsedByAnotherClient(
-                                          number)) {
+                                              number) ==
+                                          'notExist') {
                                         dynamic result =
                                             await _auth.createAccount(
                                                 password: password,
@@ -308,13 +318,20 @@ class _SignUpState extends State<SignUp> {
                                         if (result == null) {
                                           errorMessage = _auth.error;
                                         }
-                                      } else {
+                                      } else if (await _numberNotUsedByAnotherClient(
+                                              number) ==
+                                          'exists') {
                                         if (mounted)
                                           setState(() {
                                             showLoader = false;
                                             errorMessage =
                                                 'Number already used';
                                           });
+                                      } else {
+                                        setState(() {
+                                          showLoader = false;
+                                          errorMessage = 'Network error';
+                                        });
                                       }
                                     }
                                   },
