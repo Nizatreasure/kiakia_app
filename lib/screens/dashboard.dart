@@ -1,16 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kiakia/login_signup/login.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
+import 'package:kiakia/not_part.dart';
+import 'package:kiakia/paystack_payment.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/home.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/order.dart';
 import 'package:kiakia/screens/drawer.dart';
@@ -43,7 +41,6 @@ class _DashboardState extends State<Dashboard> {
       _currentBottomNavigationBarIndex = 1;
     });
   }
-
 
   _initializeTime() async {
     await TimeMachine.initialize({'rootBundle': rootBundle});
@@ -138,85 +135,75 @@ class _DashboardState extends State<Dashboard> {
       Home(setCurrentNavigationBarIndex, showNumberNotVerified,
           registerUserNumber),
       Order(),
-      Container(),
-      Container(),
+      PaystackPayment(),
+      NotPart(),
     ];
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 500),
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Color(0xffffffff),
-        appBar: AppBar(
-          leading: IconButton(
-                  icon: Icon(
-                    Icons.menu,
-                    color: Colors.black,
-                  ),
-                  onPressed: () {
-                    _scaffoldKey.currentState.openDrawer();
-                  },
-                ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: FlatButton.icon(
-                icon: Icon(
-                  Icons.person,
-                  color: Colors.blue,
-                  size: 16,
-                ),
-                onPressed: () async {
-                  await _auth.logOut();
-                },
-                label: Text(
-                  'Logout',
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14),
-                ),
-              ),
-            )
-          ],
-          backgroundColor: Color(0xffffffff),
-          title: Text(
-            _navigationBarTitle[_currentBottomNavigationBarIndex],
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontWeight: FontWeight.w500),
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(
+            Icons.menu,
+            color: Colors.black,
           ),
-          centerTitle: true,
-          elevation: 0,
+          onPressed: () {
+            _scaffoldKey.currentState.openDrawer();
+          },
         ),
-        drawer: MyDrawer(
-                photoURL: photoURL,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: FlatButton.icon(
+              icon: Icon(
+                Icons.person,
+                color: Colors.blue,
+                size: 16,
               ),
-        body: _bottomNavigationBarItemBody[_currentBottomNavigationBarIndex],
-        bottomNavigationBar: BottomNavigationBar(
-            unselectedItemColor: Color.fromRGBO(166, 170, 180, 1),
-            selectedItemColor: Color.fromRGBO(77, 172, 246, 1),
-            showUnselectedLabels: true,
-            currentIndex: _currentBottomNavigationBarIndex,
-            onTap: (index) {
-              setState(() {
-                _currentBottomNavigationBarIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
+              onPressed: () async {
+                await _auth.logOut();
+              },
+              label: Text(
+                'Logout',
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14),
               ),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.library_books), label: 'Order'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.credit_card), label: 'Wallet'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.settings), label: 'Settings')
-            ]),
+            ),
+          )
+        ],
+        title: Text(
+          _navigationBarTitle[_currentBottomNavigationBarIndex],
+          style: TextStyle(
+              color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
+        ),
+        centerTitle: true,
+        elevation: 0,
       ),
+      drawer: MyDrawer(
+        photoURL: photoURL,
+      ),
+      body: _bottomNavigationBarItemBody[_currentBottomNavigationBarIndex],
+      bottomNavigationBar: BottomNavigationBar(
+          unselectedItemColor: Color.fromRGBO(166, 170, 180, 1),
+          selectedItemColor: Theme.of(context).buttonColor,
+          showUnselectedLabels: true,
+          currentIndex: _currentBottomNavigationBarIndex,
+          onTap: (index) {
+            setState(() {
+              _currentBottomNavigationBarIndex = index;
+            });
+          },
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.library_books), label: 'Order'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.credit_card), label: 'Wallet'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.settings), label: 'Settings')
+          ]),
     );
   }
 }

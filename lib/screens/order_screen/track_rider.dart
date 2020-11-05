@@ -20,7 +20,7 @@ class _TrackRiderState extends State<TrackRider>
   String phoneNumber = '+2348117933576';
   Completer<GoogleMapController> _mapController = Completer();
   double _originLatitude = 9.0611743, _originLongitude = 7.4894103;
-  double _destinationLatitude = 9.5393398, _destinationLongitude = 6.4666574;
+  double _destinationLatitude = 9.539399, _destinationLongitude = 6.468836;
   Map<MarkerId, Marker> markers = {};
   Map<PolylineId, Polyline> polyLines = {};
   List<LatLng> polylineCoordinates = [];
@@ -280,7 +280,8 @@ class _TrackRiderState extends State<TrackRider>
                           )
                         : Container(
                             width: MediaQuery.of(context).size.width,
-                            constraints: BoxConstraints(maxHeight: 220, maxWidth: 400),
+                            constraints:
+                                BoxConstraints(maxHeight: 220, maxWidth: 400),
                             decoration: BoxDecoration(
                                 color: Color.fromRGBO(77, 172, 246, 1),
                                 borderRadius: BorderRadius.only(

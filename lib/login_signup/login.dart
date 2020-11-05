@@ -72,7 +72,6 @@ class _LoginPageState extends State<LoginPage> {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 30.0),
@@ -100,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Text(
                               'Login',
                               style: TextStyle(
-                                  color: Color.fromRGBO(15, 125, 188, 1),
+                                  color: Theme.of(context).buttonColor,
                                   fontSize: 36,
                                   fontWeight: FontWeight.w500),
                             ),
@@ -148,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                                                     horizontal: 30,
                                                     vertical: 10),
                                                 color: id == 1
-                                                    ? Colors.blue
+                                                    ? Theme.of(context).buttonColor
                                                     : Colors.transparent,
                                                 child: Text(
                                                   'Email',
@@ -169,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                                                     horizontal: 30,
                                                     vertical: 10),
                                                 color: id == 2
-                                                    ? Colors.blue
+                                                    ? Theme.of(context).buttonColor
                                                     : Colors.transparent,
                                                 child: Text(
                                                   'Number',
@@ -410,15 +409,10 @@ class _LoginPageState extends State<LoginPage> {
                                           decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(20),
-                                              color: Color.fromRGBO(
-                                                  15, 125, 188, 1)),
+                                              color: Theme.of(context).buttonColor),
                                           child: Text(
                                             'Login',
-                                            style: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    246, 248, 250, 1),
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w600),
+                                            style: Theme.of(context).textTheme.button,
                                           ),
                                         ),
                                       ),
@@ -453,7 +447,6 @@ class _LoginPageState extends State<LoginPage> {
                               children: [
                                 Text('No account?',
                                     style: TextStyle(
-                                        color: Colors.black,
                                         fontWeight: FontWeight.w400,
                                         fontSize: 16)),
                                 SizedBox(

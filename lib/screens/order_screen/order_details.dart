@@ -178,13 +178,13 @@ class _OrderDetailsState extends State<OrderDetails> {
                   alignment: Alignment.center,
                   height: 40,
                   width: width / 2 - 5,
-                  color: Color.fromRGBO(77, 172, 245, 1),
+                  color: Theme.of(context).accentColor,
                   child: Text(
                     'Call',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18),
+                    style: Theme.of(context)
+                        .textTheme
+                        .button
+                        .copyWith(color: Colors.black),
                   ),
                 ),
               ),
@@ -197,20 +197,20 @@ class _OrderDetailsState extends State<OrderDetails> {
                   alignment: Alignment.center,
                   height: 40,
                   width: width / 2 - 5,
-                  color: Color.fromRGBO(77, 172, 245, 1),
+                  color: Theme.of(context).accentColor,
                   child: Text(
                     'Track',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18),
+                    style: Theme.of(context)
+                        .textTheme
+                        .button
+                        .copyWith(color: Colors.black),
                   ),
                 ),
               ),
             ],
           ),
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.2,
+            height: 50,
           ),
 
           //for wide screens, the buttons are shown in a row, white they are show in a column for small screens
@@ -228,13 +228,13 @@ class _OrderDetailsState extends State<OrderDetails> {
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: Color.fromRGBO(77, 172, 246, 1), width: 2)),
+                            color: Theme.of(context).accentColor, width: 2)),
                     child: Text(
                       'Cancel Order',
-                      style: TextStyle(
-                          color: Color.fromRGBO(77, 172, 246, 1),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600),
+                      style: Theme.of(context)
+                          .textTheme
+                          .button
+                          .copyWith(color: Theme.of(context).accentColor),
                     ),
                   ),
                 ),
@@ -266,13 +266,10 @@ Widget payNowButton(BuildContext context) {
       margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: Color.fromRGBO(77, 172, 246, 1)),
+          color: Theme.of(context).accentColor),
       child: Text(
         'Pay Now',
-        style: TextStyle(
-            color: Color.fromRGBO(246, 248, 250, 1),
-            fontSize: 20,
-            fontWeight: FontWeight.w600),
+        style: Theme.of(context).textTheme.button.copyWith(fontSize: 20),
       ),
     ),
   );

@@ -27,8 +27,8 @@ class OrderReceived extends StatelessWidget {
             return SingleChildScrollView(
               child: Center(
                 child: ConstrainedBox(
-                  constraints:
-                      BoxConstraints(minHeight: viewportConstraint.maxHeight, maxWidth: 500),
+                  constraints: BoxConstraints(
+                      minHeight: viewportConstraint.maxHeight, maxWidth: 500),
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
@@ -71,13 +71,13 @@ class OrderReceived extends StatelessWidget {
                                 horizontal: 30, vertical: 10),
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
-                                color: Color.fromRGBO(77, 172, 246, 1)),
+                                color: Theme.of(context).accentColor),
                             child: Text(
                               'Track Cylinder',
-                              style: TextStyle(
-                                  color: Color.fromRGBO(246, 248, 250, 1),
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .button
+                                  .copyWith(fontSize: 20),
                             ),
                           ),
                         ),

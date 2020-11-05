@@ -2,9 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:http/http.dart';
 
 class Home extends StatefulWidget {
   //receives the function for switching from home to order page when a user clicks on quick order
@@ -27,22 +27,21 @@ class _HomeState extends State<Home> {
   //the functions checks if the user's phone number has been verified. if it has not been verified,
   // the verifyNumber variable is set to true and the user is asked to verify their number;
   _isUserVerified() async {
-        final uid = FirebaseAuth.instance.currentUser.uid;
-        await Future.delayed(Duration(seconds: 5));
-        final snapshot = await FirebaseDatabase.instance
-            .reference()
-            .child('users')
-            .child(uid)
-            .once();
-        if (snapshot.value['number'] == '') {
-          widget.addNumber();
-        }
-        if (snapshot.value['number'] != '' &&
-            snapshot.value['isNumberVerified'] == false) {
-          //shows the dialog asking users whose numbers have not been verified to verify it
-          widget.numberNotVerified(snapshot.value['number']);
-        }
-
+    final uid = FirebaseAuth.instance.currentUser.uid;
+    await Future.delayed(Duration(seconds: 5));
+    final snapshot = await FirebaseDatabase.instance
+        .reference()
+        .child('users')
+        .child(uid)
+        .once();
+    if (snapshot.value['number'] == '') {
+      widget.addNumber();
+    }
+    if (snapshot.value['number'] != '' &&
+        snapshot.value['isNumberVerified'] == false) {
+      //shows the dialog asking users whose numbers have not been verified to verify it
+      widget.numberNotVerified(snapshot.value['number']);
+    }
   }
 
   @override
@@ -53,67 +52,126 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    Color color = value >= 70
+        ? Colors.green[700]
+        : value >= 40
+            ? Colors.yellow[700]
+            : value >= 21
+                ? Colors.orange[700]
+                : Colors.red[700];
     return ListView(
       children: [
-        Stack(
+        Container(
+          height: 200,
           alignment: Alignment.bottomCenter,
-          children: [
-            //this container specifies the height for displaying the gauge
-            Container(
-              height: 170,
-              padding: EdgeInsets.only(bottom: 15),
-              child: Center(
-                child: SfRadialGauge(
-                  axes: <RadialAxis>[
-                    RadialAxis(
-                        minimum: 0,
-                        maximum: 100,
-                        showLabels: false,
-                        showTicks: false,
-                        startAngle: 115,
-                        endAngle: 65,
-                        axisLineStyle: AxisLineStyle(
-                            thickness: 0.2,
-                            cornerStyle: CornerStyle.bothCurve,
-                            color: Color.fromRGBO(238, 238, 238, 1),
-                            thicknessUnit: GaugeSizeUnit.factor),
-                        pointers: <GaugePointer>[
-                          //shows the progress of the gauge in terms of colors
-                          RangePointer(
-                              value: value,
-                              cornerStyle: CornerStyle.bothCurve,
-                              width: 0.2,
-                              sizeUnit: GaugeSizeUnit.factor,
-                              gradient: SweepGradient(colors: [
-                                Color.fromRGBO(148, 153, 196, 1),
-                                Color.fromRGBO(77, 147, 246, 1)
-                              ]))
-                        ],
-                        annotations: <GaugeAnnotation>[
-                          //shows the text at the center of the gauge
-                          GaugeAnnotation(
-                              positionFactor: 0.1,
-                              angle: 90,
-                              widget: Text(
-                                '${value.round()}%',
-                                style: TextStyle(
-                                    fontSize: 36, color: Colors.black),
-                              ))
-                        ]),
-                  ],
+          child: Stack(
+            overflow: Overflow.visible,
+            alignment: Alignment(0, -1.5),
+            children: [
+              Container(
+                height: 44,
+                width: 100,
+                child: CustomPaint(
+                  painter: CylinderTop(
+                    color: color,
+                  ),
                 ),
               ),
-            ),
-            Center(
-              child: Text(
-                'Gas Usage',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+
+              Positioned(
+                bottom: -9,
+                child: Container(
+                  width: 70,
+                  height: 10,
+                  decoration: BoxDecoration(
+                      border: BorderDirectional(
+                    bottom: BorderSide(color: color, width: 4),
+                    end: BorderSide(color: color, width: 4),
+                    start: BorderSide(color: color, width: 4),
+                  )),
+                ),
               ),
-            )
-          ],
+
+              //this container specifies the height for displaying the gauge
+              Container(
+                height: 170,
+                width: 120,
+                padding: EdgeInsets.only(bottom: 1, top: 10),
+                child: Center(
+                  // child: SfRadialGauge(
+                  //   axes: <RadialAxis>[
+                  //     RadialAxis(
+                  //         minimum: 0,
+                  //         maximum: 100,
+                  //         showLabels: false,
+                  //         showTicks: false,
+                  //         startAngle: 115,
+                  //         endAngle: 65,
+                  //         axisLineStyle: AxisLineStyle(
+                  //             thickness: 0.2,
+                  //             cornerStyle: CornerStyle.bothCurve,
+                  //             color: Color.fromRGBO(238, 238, 238, 1),
+                  //             thicknessUnit: GaugeSizeUnit.factor),
+                  //         pointers: <GaugePointer>[
+                  //           //shows the progress of the gauge in terms of colors
+                  //           RangePointer(
+                  //               value: value,
+                  //               cornerStyle: CornerStyle.bothCurve,
+                  //               width: 0.2,
+                  //               sizeUnit: GaugeSizeUnit.factor,
+                  //               gradient: SweepGradient(colors: [
+                  //                 Color.fromRGBO(148, 153, 196, 1),
+                  //                 Color.fromRGBO(77, 147, 246, 1)
+                  //               ]))
+                  //         ],
+                  //         annotations: <GaugeAnnotation>[
+                  //           //shows the text at the center of the gauge
+                  //           GaugeAnnotation(
+                  //               positionFactor: 0.1,
+                  //               angle: 90,
+                  //               widget: Text(
+                  //                 '${value.round()}%',
+                  //                 style: TextStyle(
+                  //                     fontSize: 36, color: Colors.black),
+                  //               ))
+                  //         ]),
+                  //   ],
+                  // ),
+                  child: LiquidLinearProgressIndicator(
+                    direction: Axis.vertical,
+                    borderRadius: 30,
+                    borderWidth: 4,
+                    value: value / 100,
+                    backgroundColor: Colors.transparent,
+                    center: Text(
+                      '${value.round()}%',
+                      style: TextStyle(fontSize: 36, color: Colors.black),
+                    ),
+                    borderColor: color,
+                    valueColor: value >= 70
+                        ? AlwaysStoppedAnimation(Colors.green)
+                        : value >= 40
+                            ? AlwaysStoppedAnimation(Colors.yellow)
+                            : value >= 21
+                                ? AlwaysStoppedAnimation(Colors.orange)
+                                : AlwaysStoppedAnimation(Colors.red),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 15,
+        ),
+        Center(
+          child: Text(
+            'Gas Usage',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          ),
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(50, 30, 30, 34),
+          padding: EdgeInsets.fromLTRB(50, 20, 30, 34),
           child: InkWell(
             onTap: () {
               widget.switchToOrderPage();
@@ -123,13 +181,10 @@ class _HomeState extends State<Home> {
               height: 50,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  color: Theme.of(context).primaryColor),
+                  color: Theme.of(context).buttonColor),
               child: Text(
                 'Quick Order',
-                style: TextStyle(
-                    color: Color.fromRGBO(246, 248, 250, 1),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.button,
               ),
             ),
           ),
@@ -182,5 +237,45 @@ class _HomeState extends State<Home> {
             }),
       ],
     );
+  }
+}
+
+class CylinderTop extends CustomPainter {
+  final Color color;
+  CylinderTop({this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint()
+      ..color = color
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+
+    var path = Path();
+    path.moveTo(size.width * 0.2, size.height * 0.2);
+
+    path.quadraticBezierTo(
+        0, size.height * 0.375, size.width * 0.35, size.height * 0.50);
+    path.lineTo(size.width * 0.35, size.height);
+
+    path.moveTo(size.width * 0.65, size.height);
+    path.lineTo(size.width * 0.65, size.height * 0.5);
+    path.quadraticBezierTo(
+        size.width, size.height * 0.375, size.width * 0.8, size.height * 0.2);
+    path.quadraticBezierTo(
+        size.width * 0.5, size.height * 0, size.width * 0.2, size.height * 0.2);
+    path.moveTo(size.width * 0.13, size.height * 0.34);
+    path.lineTo(size.width * 0.13, size.height);
+    path.moveTo(size.width * 0.87, size.height * 0.34);
+    path.lineTo(size.width * 0.87, size.height);
+    path.moveTo(size.width * 0.35, size.height * 0.7);
+    path.quadraticBezierTo(size.width * 0.5, size.height * 0.6,
+        size.width * 0.65, size.height * 0.7);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:kiakia/app_theme.dart';
 import 'package:kiakia/login_signup/authenticate.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/screens/dashboard.dart';
@@ -65,13 +66,12 @@ class _MyAppState extends State<MyApp> {
       return Container(
           color: Colors.white,
           child: Center(
-            child: CircularProgressIndicator(),
+            child: Image.asset('assets/gas_logo.jpg'),
           ));
     }
 
     // if (FirebaseAuth.instance.currentUser != null)
     //   FirebaseAuth.instance.signOut();
-
     //returns the application when flutterFire has been successfully initialized
     return MultiProvider(
       providers: [
@@ -81,7 +81,8 @@ class _MyAppState extends State<MyApp> {
         ),
       ],
 
-      //wraps the entire application to ensure that all textfields lose focus when the user taps on any non-clickable element
+      //wraps the entire application to ensure that all textfields
+      //lose focus when the user taps on any non-clickable element
       child: GestureDetector(
         onTap: () {
           //removes focus from any currently focused textField when a user clicks on a whitespace
@@ -92,7 +93,9 @@ class _MyAppState extends State<MyApp> {
           }
         },
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: Wrapper(),
+          theme: lightTheme,
         ),
       ),
     );
@@ -119,7 +122,8 @@ class _WrapperState extends State<Wrapper> {
   @override
   Widget build(BuildContext context) {
     _checkUserData();
-    //decides whether to show the home or sign in page depending on the information it receives from the user stream
+    //decides whether to show the home or sign in page depending
+    // on the information it receives from the user stream
     if (Provider.of<User>(context) == null &&
         FirebaseAuth.instance.currentUser == null) {
       if (userData == null)
@@ -128,7 +132,7 @@ class _WrapperState extends State<Wrapper> {
         return Container(
           color: Colors.white,
           child: Center(
-            child: CircularProgressIndicator(),
+            child: Image.asset('assets/gas_logo.jpg'),
           ),
         );
       } else
@@ -143,7 +147,7 @@ class _WrapperState extends State<Wrapper> {
       return Container(
         color: Colors.white,
         child: Center(
-          child: CircularProgressIndicator(),
+          child: Image.asset('assets/gas_logo.jpg'),
         ),
       );
     }

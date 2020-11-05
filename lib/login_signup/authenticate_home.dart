@@ -30,7 +30,6 @@ class _AuthenticationHomeState extends State<AuthenticationHome> {
   Widget build(BuildContext context) {
     //get the width of the screen within the context from MediaQuery
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Color(0xffffffff),
@@ -107,15 +106,11 @@ class _AuthenticationHomeState extends State<AuthenticationHome> {
                         : EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        color: Color.fromRGBO(15, 125, 188, 1)),
+                        color: Theme.of(context).buttonColor),
                     child: Text(
                       'SignUp',
-                      style: TextStyle(
-                          color: Color.fromRGBO(246, 248, 250, 1),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.button),
                     ),
-                  ),
                 ),
 
                 // this container displays the login button and is wrapped with InkWell to make it clickable
@@ -133,13 +128,12 @@ class _AuthenticationHomeState extends State<AuthenticationHome> {
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: Color.fromRGBO(77, 172, 246, 1), width: 2)),
+                            color: Theme.of(context).buttonColor, width: 2)),
                     child: Text(
                       'Log In',
-                      style: TextStyle(
-                          color: Color.fromRGBO(77, 172, 246, 1),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.button.copyWith(
+                        color: Theme.of(context).buttonColor,
+                      ),
                     ),
                   ),
                 ),

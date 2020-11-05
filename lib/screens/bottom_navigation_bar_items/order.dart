@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/screens/order_screen/order_details.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
@@ -72,6 +73,8 @@ class _OrderState extends State<Order> {
       if (gasSize == 2) _disableDecreaseGasSizeButton = true;
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -316,13 +319,10 @@ class _OrderState extends State<Order> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  color: Color.fromRGBO(77, 172, 246, 1)),
+                  color: Theme.of(context).accentColor),
               child: Text(
                 'Order Details',
-                style: TextStyle(
-                    color: Color.fromRGBO(246, 248, 250, 1),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.button,
               ),
             ),
           ),
@@ -351,8 +351,8 @@ class CylinderSize extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
           color: value
-              ? Color.fromRGBO(15, 125, 188, 1)
-              : Color.fromRGBO(77, 172, 246, 1),
+              ? Theme.of(context).buttonColor
+              : Theme.of(context).accentColor,
           borderRadius: BorderRadius.circular(20)),
       child: Text(
         text,

@@ -78,7 +78,6 @@ class _SignUpState extends State<SignUp> {
     //gets the width of the current device from mediaQuery
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 30.0),
@@ -104,7 +103,7 @@ class _SignUpState extends State<SignUp> {
                               : Alignment.centerLeft,
                           child: Text('SignUp',
                               style: TextStyle(
-                                  color: Color.fromRGBO(77, 172, 246, 1),
+                                  color: Theme.of(context).buttonColor,
                                   fontSize: 36,
                                   fontWeight: FontWeight.w500)),
                         ),
@@ -117,7 +116,7 @@ class _SignUpState extends State<SignUp> {
                             key: _formKey,
                             child: Column(
                               children: [
-                                //creates a formfield where users input their names
+                                //creates a formField where users input their names
                                 TextFormField(
                                   onChanged: (val) {
                                     name = val.trim();
@@ -340,14 +339,10 @@ class _SignUpState extends State<SignUp> {
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(20),
-                                        color: Color.fromRGBO(15, 125, 188, 1)),
+                                        color: Theme.of(context).buttonColor),
                                     child: Text(
                                       'SignUp',
-                                      style: TextStyle(
-                                          color:
-                                              Color.fromRGBO(246, 248, 250, 1),
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600),
+                                      style: Theme.of(context).textTheme.button
                                     ),
                                   ),
                                 ),
