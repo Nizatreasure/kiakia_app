@@ -9,10 +9,12 @@ import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/not_part.dart';
 import 'package:kiakia/paystack_payment.dart';
+import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/home.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/order.dart';
 import 'package:kiakia/screens/drawer.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:provider/provider.dart';
 import 'package:time_machine/time_machine.dart';
 
 class Dashboard extends StatefulWidget {
@@ -23,10 +25,10 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   AuthenticationService _auth = AuthenticationService();
   final storage = new LocalStorage('user_data.json');
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentBottomNavigationBarIndex = 0;
   String photoURL;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   List<String> _navigationBarTitle = [
     'Dashboard',
     'Order',
@@ -35,12 +37,6 @@ class _DashboardState extends State<Dashboard> {
   ];
   StreamSubscription<Event> userDataStream;
 
-  //moves the bottom navigation bar to the order page
-  void setCurrentNavigationBarIndex() {
-    setState(() {
-      _currentBottomNavigationBarIndex = 1;
-    });
-  }
 
   _initializeTime() async {
     await TimeMachine.initialize({'rootBundle': rootBundle});
@@ -98,11 +94,12 @@ class _DashboardState extends State<Dashboard> {
   //saves the unique device token to firebase
   _saveDeviceToken() async {
     String id = FirebaseAuth.instance.currentUser.uid;
-    String token = await _firebaseMessaging.getToken();
+    String token = await FirebaseMessaging().getToken();
+    await Future.delayed(Duration(seconds: 10));
     if (token != null) {
       await FirebaseDatabase.instance
           .reference()
-          .child('users')
+          .child('gas_monitor')
           .child(id)
           .update({'token': token});
     }
@@ -117,9 +114,11 @@ class _DashboardState extends State<Dashboard> {
         onMessage: (Map<String, dynamic> message) async {
       print('onMessage: $message');
     }, onLaunch: (Map<String, dynamic> message) async {
-      print('onMessage: $message');
+      Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false).updateCurrentIndex(1);
+      print('onLaunch: $message');
     }, onResume: (Map<String, dynamic> message) async {
-      print('onMessage: $message');
+      Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false).updateCurrentIndex(1);
+      print('onResume: $message');
     });
   }
 
@@ -131,8 +130,9 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    _currentBottomNavigationBarIndex = Provider.of<ChangeButtonNavigationBarIndex>(context).currentIndex;
     List<Widget> _bottomNavigationBarItemBody = [
-      Home(setCurrentNavigationBarIndex, showNumberNotVerified,
+      Home(showNumberNotVerified,
           registerUserNumber),
       Order(),
       PaystackPayment(),
@@ -185,24 +185,63 @@ class _DashboardState extends State<Dashboard> {
       ),
       body: _bottomNavigationBarItemBody[_currentBottomNavigationBarIndex],
       bottomNavigationBar: BottomNavigationBar(
-          unselectedItemColor: Color.fromRGBO(166, 170, 180, 1),
-          selectedItemColor: Theme.of(context).buttonColor,
-          showUnselectedLabels: true,
+          unselectedItemColor: Color.fromRGBO(255, 255, 255, 0.5),
+          selectedItemColor: Color.fromRGBO(255, 255, 255, 1),
+          showUnselectedLabels: false,
+          showSelectedLabels: false,
+          iconSize: 25,
           currentIndex: _currentBottomNavigationBarIndex,
+          backgroundColor: Theme.of(context).buttonColor,
           onTap: (index) {
-            setState(() {
-              _currentBottomNavigationBarIndex = index;
-            });
+            Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false).updateCurrentIndex(index);
           },
           type: BottomNavigationBarType.fixed,
           items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.library_books), label: 'Order'),
+                icon: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: _currentBottomNavigationBarIndex == 0
+                        ? Color.fromRGBO(255, 255, 255, 0.5)
+                        : Theme.of(context).buttonColor,
+                  ),
+                  child: Icon(Icons.home),
+                ),
+                label: 'Home'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.credit_card), label: 'Wallet'),
+                icon: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: _currentBottomNavigationBarIndex == 1
+                          ? Color.fromRGBO(255, 255, 255, 0.5)
+                          : Theme.of(context).buttonColor,
+                    ),
+                    child: Icon(Icons.shopping_cart)),
+                label: 'Order'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.settings), label: 'Settings')
+                icon: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: _currentBottomNavigationBarIndex == 2
+                          ? Color.fromRGBO(255, 255, 255, 0.5)
+                          : Theme.of(context).buttonColor,
+                    ),
+                    child: Icon(Icons.credit_card)),
+                label: 'Wallet'),
+            BottomNavigationBarItem(
+                icon: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: _currentBottomNavigationBarIndex == 3
+                          ? Color.fromRGBO(255, 255, 255, 0.5)
+                          : Theme.of(context).buttonColor,
+                    ),
+                    child: Icon(Icons.settings)),
+                label: 'Settings')
           ]),
     );
   }

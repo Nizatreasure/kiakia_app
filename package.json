@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "firebase-admin": "^9.3.0",
+    "firebase-tools": "^8.15.1",
+    "twilio": "^3.51.0"
+  }
+}

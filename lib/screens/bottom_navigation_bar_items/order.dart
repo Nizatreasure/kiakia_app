@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_paystack/flutter_paystack.dart';
-import 'package:kiakia/login_signup/decoration.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart';
+import 'package:intl/intl.dart';
+import 'package:kiakia/screens/order_screen/address_suggestion.dart';
 import 'package:kiakia/screens/order_screen/order_details.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
+import 'package:localstorage/localstorage.dart';
+import 'package:uuid/uuid.dart';
 
 class Order extends StatefulWidget {
   @override
@@ -11,356 +16,495 @@ class Order extends StatefulWidget {
 }
 
 class _OrderState extends State<Order> {
-  String selectedValue; //used for the dropdown menu
-  bool _disableIncreaseGasSizeButton = false;
-  bool _disableDecreaseGasSizeButton = true;
-  int gasSize = 2;
+  Map<String, Map> packageDetails = {};
+  TextEditingController _controller = new TextEditingController();
+  Map location = {};
+  static final String key = 'AIzaSyDuc6Wz_ssKWEiNA4xJyUzT812LZgxnVUc';
+  final storage = new LocalStorage('user_data.json');
+  bool isVerified = false;
+  String number;
 
-  //controls the selection of one size among the available sizes of cylinders. initially, everything is set to false as no cylinder size is selected
-  Map<int, bool> cylinderSize = {
-    1: false,
-    2: false,
-    3: false,
-    4: false,
-  };
+  //gets the location of the user if any has been saved
+  getLocationFromStorage() async {
+    await storage.ready;
+    Map storedLocation = await storage.getItem('location');
+    if (storedLocation != null && storedLocation.isNotEmpty) {
+      location = storedLocation;
+      _controller.text = location['address'];
+    }
 
-  //removes the selection from all/any selected cylinder
-  void changeCylinderSize() {
-    setState(() {
-      for (int i = 1; i < 5; i++) {
-        cylinderSize[i] = false;
-      }
-    });
+    //this gets the user information from the local storage
+    Map data = await storage.getItem('userData');
+    isVerified = data['status'];
+    number = data['number'];
   }
 
-  List paymentMode = [
-    'Bank Transfer',
-    'Credit Card',
-    'Ewallet',
-    'Direct Deposit'
-  ];
+  removeItemsFromMap(String key) {
+    packageDetails.remove(key);
+  }
 
-  //increases the size of the gas cylinder when the 'plus' sign is clicked on
-  void incrementGasSize() {
-    setState(() {
-      if (gasSize < 20) {
-        _disableIncreaseGasSizeButton = false;
-        _disableDecreaseGasSizeButton = false;
-        gasSize += 1;
-        if (gasSize != 2 && gasSize != 8 && gasSize != 15) {
-          //the change cylinder size function is called to remove the current selection if the size doesn't match the default sized of the above ( where 2 means 'S', 8 means 'M' and 15 means 'L')
-          changeCylinderSize();
+  addItemsToMap(String key, Map value) {
+    packageDetails.putIfAbsent(key, () => value);
+  }
+
+  Future convertPlaceIdToLatLng(String placeId, String sessionToken) async {
+    Map locationLatLng = {};
+    try {
+      final response = await get(
+          'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$key&sessiontoken=$sessionToken');
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        if (result['status'] == 'OK') {
+          locationLatLng.putIfAbsent(
+              'lat', () => result['result']['geometry']['location']['lat']);
+          locationLatLng.putIfAbsent(
+              'lng', () => result['result']['geometry']['location']['lng']);
+          location = locationLatLng;
         }
       }
-      //disables the increase button when the maximum size for the cylinder has been selected
-      if (gasSize == 20) _disableIncreaseGasSizeButton = true;
-    });
+    } catch (e) {
+      convertPlaceIdToLatLng(placeId, sessionToken);
+    }
   }
 
-  //decreases the size of the gas cylinder when the 'minus' sign is clicked on
-  void decrementGasSize() {
-    setState(() {
-      if (gasSize > 2) {
-        _disableDecreaseGasSizeButton = false;
-        _disableIncreaseGasSizeButton = false;
-        gasSize -= 1;
-        if (gasSize != 8 && gasSize != 15 && gasSize != 20) {
-          //the change cylinder size function is called to remove the current selection if the size doesn't match the default sized of the above ( where 8 means 'M', 15 means 'L' and 20 means 'XL')
-          changeCylinderSize();
-        }
-      }
-      //decreases the reduce button when the minimum cylinder size has been selected
-      if (gasSize == 2) _disableDecreaseGasSizeButton = true;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {});
+    getLocationFromStorage();
   }
 
-
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    //these if statements ensure that the cylinder sizes are selected when  their corresponding values have been selected
-    if (gasSize == 2) cylinderSize[1] = true;
-    if (gasSize == 8) cylinderSize[2] = true;
-    if (gasSize == 15) cylinderSize[3] = true;
-    if (gasSize == 20) cylinderSize[4] = true;
-    return ListView(
-
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 5.0),
-          child: Stack(
-            alignment: Alignment(0, 0.85),
+    double width = MediaQuery.of(context).size.width;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      child: ListView(
+        children: [
+          Text(
+            'Cylinder Size',
+            style: Theme.of(context)
+                .textTheme
+                .bodyText2
+                .copyWith(fontWeight: FontWeight.w600, fontSize: 20),
+          ),
+          SizedBox(height: 8),
+          Column(
             children: [
-              Container(
-                height: 200,
-                child: Center(
-                  child: SfRadialGauge(
-                    axes: [
-                      RadialAxis(
-                        maximum: 100,
-                        minimum: 0,
-                        showTicks: false,
-                        showLabels: false,
-                        startAngle: 128,
-                        endAngle: 52,
-                        axisLineStyle: AxisLineStyle(
-                          thicknessUnit: GaugeSizeUnit.factor,
-                          thickness: 0.2,
-                          cornerStyle: CornerStyle.bothCurve,
-                          color: Color.fromRGBO(77, 172, 246, 0.4),
-                        ),
-                        annotations: <GaugeAnnotation>[
-                          GaugeAnnotation(
-                            widget: Container(
-                              height: 70,
-                              width: 80,
-                              child: Image.asset('assets/gas_cylinder.jpg'),
-                            ),
-                            angle: 90,
-                            positionFactor: 0,
-                          ),
-                        ],
-                      ),
-                    ],
+              Row(
+                children: [
+                  GasPackages(
+                    width: width,
+                    price: 900,
+                    packageName: 'Mini Package',
+                    packageSize: '3kg',
+                    addItem: addItemsToMap,
+                    removeItem: removeItemsFromMap,
                   ),
-                ),
+                  Spacer(),
+                  GasPackages(
+                    width: width,
+                    packageSize: '6kg',
+                    packageName: 'Light Package',
+                    price: 1800,
+                    addItem: addItemsToMap,
+                    removeItem: removeItemsFromMap,
+                  )
+                ],
               ),
-              Center(
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: Color.fromRGBO(240, 245, 250, 1),
-                      borderRadius: BorderRadius.circular(20)),
-                  width: 105,
-                  height: 30,
-                  alignment: Alignment.center,
-                  child: Row(
-                    children: [
-                      IconButton(
-                          splashRadius: 25,
-                          constraints: BoxConstraints.tight(Size(35, 30)),
-                          icon: Icon(
-                            Icons.remove,
-                            size: 14,
-                            color: _disableDecreaseGasSizeButton
-                                ? Color.fromRGBO(196, 196, 196, 1)
-                                : Color.fromRGBO(0, 0, 0, 1),
-                          ),
-                          onPressed: _disableDecreaseGasSizeButton
-                              ? null
-                              : decrementGasSize),
-                      Text(
-                        '$gasSize kg',
-                        style: TextStyle(
-                            fontSize: 13,
-                            color: Color.fromRGBO(0, 0, 0, 1),
-                            fontWeight: FontWeight.w500),
-                      ),
-                      IconButton(
-                          splashRadius: 25,
-                          constraints: BoxConstraints.tight(Size(35, 30)),
-                          icon: Icon(
-                            Icons.add,
-                            size: 14,
-                            color: _disableIncreaseGasSizeButton
-                                ? Color.fromRGBO(196, 196, 196, 1)
-                                : Color.fromRGBO(0, 0, 0, 1),
-                          ),
-                          onPressed: _disableIncreaseGasSizeButton
-                              ? null
-                              : incrementGasSize)
-                    ],
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                children: [
+                  GasPackages(
+                    width: width,
+                    price: 3750,
+                    packageName: 'Standard Package',
+                    packageSize: '12.5kg',
+                    addItem: addItemsToMap,
+                    removeItem: removeItemsFromMap,
                   ),
-                ),
+                  Spacer(),
+                  GasPackages(
+                    width: width,
+                    packageSize: '50kg',
+                    packageName: 'Business Package',
+                    price: 9000,
+                    addItem: addItemsToMap,
+                    removeItem: removeItemsFromMap,
+                  )
+                ],
               ),
             ],
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 30.0, bottom: 20),
-          child: Text('Cylinder Size',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w500,
-              )),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 35),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              InkWell(
-                onTap: () {
-                  changeCylinderSize();
-                  cylinderSize[1] = true;
-                  gasSize = 2;
-                  _disableIncreaseGasSizeButton = false;
-                  _disableDecreaseGasSizeButton = true;
-                  setState(() {});
-                },
-                child: CylinderSize(
-                  text: 'S',
-                  value: cylinderSize[1],
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  changeCylinderSize();
-                  cylinderSize[2] = true;
-                  gasSize = 8;
-                  _disableIncreaseGasSizeButton = false;
-                  _disableDecreaseGasSizeButton = false;
-                  setState(() {});
-                },
-                child: CylinderSize(
-                  text: 'M',
-                  value: cylinderSize[2],
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  changeCylinderSize();
-                  cylinderSize[3] = true;
-                  gasSize = 15;
-                  _disableIncreaseGasSizeButton = false;
-                  _disableDecreaseGasSizeButton = false;
-                  setState(() {});
-                },
-                child: CylinderSize(
-                  text: 'L',
-                  value: cylinderSize[3],
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  changeCylinderSize();
-                  cylinderSize[4] = true;
-                  gasSize = 20;
-                  _disableIncreaseGasSizeButton = true;
-                  _disableDecreaseGasSizeButton = false;
-                  setState(() {});
-                },
-                child: CylinderSize(
-                  text: 'XL',
-                  value: cylinderSize[4],
-                ),
-              ),
-            ],
+          SizedBox(
+            height: 20,
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 30.0, top: 20, bottom: 20),
-          child: Text(
+          Text(
             'Location',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w500,
-            ),
+            style: Theme.of(context)
+                .textTheme
+                .bodyText2
+                .copyWith(fontWeight: FontWeight.w600, fontSize: 20),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 35),
-          child: TextField(
-            style: TextStyle(fontSize: 20),
-            decoration: decoration.copyWith(
-                hintText: 'Enter location',
-                hintStyle: TextStyle(
-                  fontSize: 22,
+          SizedBox(height: 8),
+          Container(
+            width: width,
+            padding: EdgeInsets.fromLTRB(20, 30, 20, 20),
+            decoration: BoxDecoration(
+                color: Theme.of(context).buttonColor.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Enter destination address below',
+                  style: Theme.of(context).textTheme.bodyText2,
                 ),
-                suffixIcon: Icon(
-                  Icons.location_on,
-                  color: Color.fromRGBO(179, 179, 182, 1),
-                )),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 30.0, top: 20, bottom: 20),
-          child: Text(
-            'Payment Mode',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w500,
+                SizedBox(height: 15),
+                TextField(
+                  readOnly: true,
+                  controller: _controller,
+                  style: TextStyle(height: 1.5, fontSize: 16),
+                  onTap: () async {
+                    final sessionToken = Uuid().v4();
+                    final AddressSuggestion result = await showSearch(
+                        context: context,
+                        query: _controller.text,
+                        delegate: AddressSearch(sessionToken));
+                    if (result != null) {
+                      _controller.text = result.description;
+                      await convertPlaceIdToLatLng(
+                          result.placeId, sessionToken);
+                      location.putIfAbsent('address', () => result.description);
+                    }
+                  },
+                  decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: Color.fromRGBO(55, 137, 236, 1),
+                      ),
+                      hintText: 'Search delivery location',
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(
+                          height: 1.5,
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodyText2
+                              .color
+                              .withOpacity(0.4))),
+                ),
+              ],
             ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 35),
-          child: DropdownButtonFormField(
-            icon: Icon(
-              Icons.arrow_drop_down,
-              size: 28,
-              color: Color.fromRGBO(179, 179, 182, 1),
+          SizedBox(height: 25),
+          FlatButton(
+            height: 45,
+            onPressed: () {
+              if (number == null || number == '') {
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Colors.red[900],
+                    content: Text(
+                      'No number registered with account. Please register a number to Order',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              } else if (isVerified == false) {
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Colors.red[900],
+                    content: Text(
+                      'Number not verified, please verify your number to Order',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              } else if (packageDetails == null || packageDetails.isEmpty) {
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Colors.red[900],
+                    content: Text(
+                      'Please select a package from cylinder size',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              } else if (location == null || location.isEmpty) {
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Colors.red[900],
+                    content: Text(
+                      'Please input destination address',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            OrderDetails(packageDetails, location)));
+              }
+            },
+            child: Text(
+              'Next',
+              style: Theme.of(context).textTheme.button,
             ),
-            style: TextStyle(fontSize: 20, color: Colors.black),
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            decoration: decoration.copyWith(hintText: 'Select Payment Method'),
-            items: paymentMode.map((item) {
-              return DropdownMenuItem(
-                child: Text(item),
-                value: item,
-              );
-            }).toList(),
-            value: selectedValue,
-            onChanged: (val) {
-              selectedValue = val;
-            },
+            color: Theme.of(context).buttonColor,
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 30),
-          child: InkWell(
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => OrderDetails()));
-            },
-            child: Container(
-              height: 50,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Theme.of(context).accentColor),
-              child: Text(
-                'Order Details',
-                style: Theme.of(context).textTheme.button,
-              ),
-            ),
-          ),
-        ),
-      ],
+          SizedBox(
+            height: 20,
+          )
+        ],
+      ),
     );
   }
 }
 
-//creates a  container in which the cylinder sizes are displayed
+//creates the container that contains the gas sizes and their packages
+class GasPackages extends StatefulWidget {
+  final String packageName, packageSize;
+  final double width, price;
+  final Function removeItem, addItem;
 
-class CylinderSize extends StatelessWidget {
-  final String text;
-  final bool value;
+  const GasPackages(
+      {this.packageName,
+      this.packageSize,
+      this.width,
+      this.price,
+      this.addItem,
+      this.removeItem});
+  @override
+  _GasPackagesState createState() => _GasPackagesState();
+}
 
-  CylinderSize({
-    this.value,
-    this.text,
-  });
+class _GasPackagesState extends State<GasPackages> {
+  bool selected = false;
+  TextEditingController _controller = new TextEditingController(text: '1');
+  final formatCurrency =
+      new NumberFormat.currency(locale: 'en_US', symbol: '#');
+  Map<String, String> details = {'quantity': '1', 'amount': '1', 'size': ''};
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    details['size'] = widget.packageSize;
     return Container(
-      height: 60,
-      width: 60,
-      alignment: Alignment.center,
+      padding: EdgeInsets.all(10),
+      width: (widget.width - 40) / 2 - 10,
       decoration: BoxDecoration(
-          color: value
-              ? Theme.of(context).buttonColor
-              : Theme.of(context).accentColor,
-          borderRadius: BorderRadius.circular(20)),
-      child: Text(
-        text,
-        style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: value ? 30 : 26,
-            color: Color.fromRGBO(255, 255, 255, 1)),
+          color: Theme.of(context).buttonColor.withOpacity(0.25),
+          borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 60,
+            alignment: Alignment.center,
+            child: Image.asset(
+              'assets/gas_cylinder3.jpg',
+            ),
+          ),
+          SizedBox(
+            height: 15,
+          ),
+          Text(
+            widget.packageName,
+            style: Theme.of(context)
+                .textTheme
+                .bodyText2
+                .copyWith(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.packageSize,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyText2
+                    .copyWith(fontSize: 16, fontWeight: FontWeight.w300),
+              ),
+              SizedBox(width: 5),
+              Text('x'),
+              SizedBox(width: 8),
+              Container(
+                height: 20,
+                width: 20,
+                color: Colors.white,
+                child: TextField(
+                  controller: _controller,
+                  decoration: null,
+                  keyboardType: TextInputType.number,
+                  maxLength: 2,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (val) {
+                    if (val.trim().isNotEmpty) details['quantity'] = val;
+                    if (val.trim().isEmpty || int.parse(val.trim()) == 0)
+                      details['quantity'] = '1';
+                    if (val.trim().length == 2)
+                      FocusScope.of(context).focusedChild.unfocus();
+                    details['amount'] =
+                        (widget.price * double.parse(details['quantity']))
+                            .toString();
+                    if (selected) {
+                      widget.removeItem(widget.packageName);
+                      widget.addItem(widget.packageName, details);
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Row(
+            children: [
+              RichText(
+                  text: TextSpan(
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .copyWith(fontSize: 14),
+                      children: [
+                    TextSpan(text: '# ', style: TextStyle(fontSize: 12)),
+                    TextSpan(
+                      text:
+                          '${formatCurrency.format(widget.price * double.parse(details['quantity'])).toString().substring(1)}',
+                    ),
+                  ])),
+              Spacer(),
+              InkWell(
+                onTap: () {
+                  details['quantity'] = _controller.text;
+                  details['amount'] =
+                      (widget.price * double.parse(details['quantity']))
+                          .toString();
+                  setState(() {
+                    selected = !selected;
+                  });
+                  if (selected) {
+                    widget.addItem(widget.packageName, details);
+                  } else {
+                    widget.removeItem(widget.packageName);
+                  }
+                },
+                splashColor: Colors.transparent,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                      color: Colors.white, shape: BoxShape.circle),
+                  child:
+                      selected ? Icon(Icons.check, color: Colors.blue) : null,
+                ),
+              ),
+            ],
+          )
+        ],
       ),
+    );
+  }
+}
+
+//builds the page where the user location is entered
+class AddressSearch extends SearchDelegate<AddressSuggestion> {
+  final String sessionToken;
+  AddressSearch(this.sessionToken);
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        tooltip: 'Clear',
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      )
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: () {
+          close(context, null);
+        });
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return locationSuggestion();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return locationSuggestion();
+  }
+
+  Widget locationSuggestion() {
+    return FutureBuilder(
+      future: AddressSuggestionRequest(sessionToken).fetchAddress(query),
+      builder: (context, AsyncSnapshot<List<AddressSuggestion>> snapshot) {
+        return query == ''
+            ? Container(
+                padding: EdgeInsets.all(20),
+                child: Text('Enter your address'),
+              )
+            : snapshot.hasData
+                ? ListView.builder(
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        contentPadding: EdgeInsets.fromLTRB(10, 5, 20, 0),
+                        tileColor: index % 2 == 0
+                            ? Color.fromRGBO(81, 83, 82, 0.3)
+                            : Color.fromRGBO(81, 83, 82, 0.1),
+                        leading: Icon(Icons.location_on_outlined),
+                        title: Text(snapshot.data[index].description),
+                        onTap: () {
+                          close(context, snapshot.data[index]);
+                        },
+                      );
+                    },
+                    itemCount: snapshot.data.length,
+                  )
+                : Container(
+                    padding: EdgeInsets.all(16),
+                    child: Text('Loading...'),
+                  );
+      },
     );
   }
 }

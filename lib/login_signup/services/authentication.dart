@@ -30,7 +30,10 @@ class AuthenticationService {
         error = 'Network request failed';
       } else if (e.code == 'user-disabled') {
         error = 'User has been disabled';
-      } else {
+      } else if (e.code == 'too-many-requests') {
+        error = 'Too many attempts';
+      }
+      else {
         error = 'Unknown error';
       }
       print(e.code);
@@ -92,7 +95,7 @@ class AuthenticationService {
                             keyboardType: TextInputType.number,
                             style: TextStyle(
                                 fontSize: 24,
-                                letterSpacing: 4,
+                                letterSpacing: 3,
                                 fontWeight: FontWeight.w500),
                             onChanged: (val) {
                               setState(() {
@@ -231,6 +234,7 @@ class AuthenticationService {
           email: email,
           isNumberVerified: isNumberVerified,
           provider: 'email');
+      await  DatabaseService(uid: user.uid).createGasMonitor();
       await secureStorage.write(key: 'password', value: password);
 
       //updates the firebase display name of the user to the name inputted
@@ -288,7 +292,7 @@ class AuthenticationService {
             return null;
           },
           codeSent: (verId, int resendToken) async {
-           if (id != 1) Navigator.pop(myContext);
+            if (id != 1) Navigator.pop(myContext);
             _resendToken = resendToken;
             showOtpDialog(myContext, verId, number, id);
           },

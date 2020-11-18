@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:kiakia/screens/order_screen/track_rider.dart';
+import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
+import 'package:provider/provider.dart';
 
 class OrderReceived extends StatelessWidget {
   @override
@@ -8,16 +9,7 @@ class OrderReceived extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xffffffff),
-          leading: IconButton(
-            icon: Icon(
-              Icons.keyboard_arrow_left,
-              color: Colors.black,
-              size: 30,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+          automaticallyImplyLeading: false,
           centerTitle: true,
           elevation: 0,
         ),
@@ -32,48 +24,57 @@ class OrderReceived extends StatelessWidget {
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
-                        Spacer(),
-                        Container(
-                          height: 200,
-                          alignment: Alignment.center,
-                          child: Image.asset(
-                            'assets/gas_cylinder2.jpg',
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                            top: 10,
-                          ),
-                          child: Text(
-                            'Order Received',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
+                        Expanded(
+                          flex: 3,
+                          child: Container(
+                            constraints: BoxConstraints(minHeight: 200),
+                            alignment: Alignment.center,
+                            child: Image.asset(
+                              'assets/landing_page1.jpg',
                             ),
                           ),
                         ),
-                        Container(
-                          width: 90,
-                          child: Image.asset('assets/logo.jpg'),
-                        ),
-                        Spacer(),
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                                style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2
+                                        .color),
+                                children: [
+                                  TextSpan(
+                                    text: 'Order Received\n',
+                                  ),
+                                  TextSpan(
+                                      text:
+                                          'A supplier is yet to accept your order. You can monitor and track your order from your History page. Thank you for choosing us',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400))
+                                ]),
+                          ),
+                        )),
                         InkWell(
                           onTap: () {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => TrackRider()));
+                            Navigator.pop(context);
+                            Provider.of<ChangeButtonNavigationBarIndex>(context,
+                                    listen: false)
+                                .updateCurrentIndex(0);
                           },
                           child: Container(
                             height: 50,
                             alignment: Alignment.center,
                             margin: EdgeInsets.symmetric(
                                 horizontal: 30, vertical: 10),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: Theme.of(context).accentColor),
+                            color: Theme.of(context).buttonColor,
                             child: Text(
-                              'Track Cylinder',
+                              'Done',
                               style: Theme.of(context)
                                   .textTheme
                                   .button
@@ -81,6 +82,9 @@ class OrderReceived extends StatelessWidget {
                             ),
                           ),
                         ),
+                        SizedBox(
+                          height: 20,
+                        )
                       ],
                     ),
                   ),

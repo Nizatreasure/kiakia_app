@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kiakia/login_signup/decoration.dart';
+import 'package:kiakia/login_signup/decoration2.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/login_signup/services/facebook_google_authentication.dart';
 import 'package:kiakia/login_signup/services/password_reset.dart';
@@ -25,7 +25,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
   final _formKey = GlobalKey<
       FormState>(); //controls the form used for inputting email and password
   bool showLoader = false;
-  bool showLoaderAndError = false;
+  bool showError = false;
   FocusNode _passwordFocusNode;
   AuthenticationService _auth = AuthenticationService();
   String password = '', errorMessage = '', pass;
@@ -68,20 +68,19 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
           localizedReason: 'Scan your fingerprint to log in',
           stickyAuth: true,
           useErrorDialogs: true);
-      setState(() {
-      });
+      setState(() {});
       if (isAuthenticated) {
         setState(() {
           authenticating = true;
           showLoader = true;
-          showLoaderAndError = true;
+          showError = false;
         });
         dynamic result = await _auth.signInWithEmailAndPassword(
             email: email, password: pass);
         if (result == null) {
           setState(() {
             authenticating = false;
-            showLoaderAndError = false;
+            showError = true;
             showLoader = false;
           });
           showDialog(
@@ -140,7 +139,6 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
   Widget build(BuildContext context) {
     //gets the width of the current device from mediaQuery
     double width = MediaQuery.of(context).size.width;
-    print(MediaQuery.of(context).size.width);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -171,16 +169,18 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                 ? Alignment.center
                                 : Alignment.centerLeft,
                             child: RichText(
-                              textAlign: width > 560 ||
+                              textAlign: width >= 560 ||
                                       widget.data['provider'] == 'google' ||
                                       widget.data['provider'] == 'facebook'
                                   ? TextAlign.center
                                   : TextAlign.left,
                               text: TextSpan(
-                                  style: TextStyle(
-                                      color: Color.fromRGBO(15, 125, 188, 1),
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w500),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2
+                                      .copyWith(
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.w500),
                                   children: [
                                     TextSpan(
                                         text: width > 560
@@ -188,8 +188,28 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                             : 'Welcome back\n'),
                                     TextSpan(
                                         text: widget.data['name'],
-                                        style: TextStyle(fontSize: 32))
+                                        style: TextStyle(
+                                            fontSize: 32,
+                                            color: Color.fromRGBO(
+                                                57, 138, 239, 1)))
                                   ]),
+                            ),
+                          ),
+                          Container(
+                            height: 50,
+                            alignment: width >= 560 ||
+                                    widget.data['provider'] == 'google' ||
+                                    widget.data['provider'] == 'facebook'
+                                ? Alignment.center
+                                : Alignment.centerLeft,
+                            child: Text(
+                              'Securely login to Gas360',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText2
+                                  .copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 20),
                             ),
                           ),
                           Spacer(),
@@ -228,9 +248,8 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                               : Color.fromRGBO(0, 0, 0, 1)),
                                       textAlignVertical:
                                           TextAlignVertical.bottom,
-                                      decoration: decoration.copyWith(
-                                        labelText: 'Password',
-                                        hintText: 'Enter your password',
+                                      decoration: decoration2.copyWith(
+                                        hintText: 'Password',
                                         suffixIcon: IconButton(
                                           icon: Icon(Icons.remove_red_eye,
                                               color: _hidePassword
@@ -247,26 +266,19 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                       ),
                                       obscureText: _hidePassword,
                                     ),
+
                                     SizedBox(
-                                      height: 7,
+                                      height: showError ? 15 : 30,
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 8.0),
-                                      child: InkWell(
-                                        onTap: () {
-                                          //displays a pop up where registered users can reset their password
-                                          forgotPasswordPopUp(context);
-                                        },
+                                    if (showError)
+                                      Container(
+                                        height: 30,
+                                        alignment: Alignment.center,
                                         child: Text(
-                                          'Forgot Password?',
-                                          style: TextStyle(
-                                              color: Colors.blue, fontSize: 15),
+                                          errorMessage,
+                                          style: TextStyle(color: Colors.red),
                                         ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      height: 40,
-                                    ),
                                     InkWell(
                                       onTap: () async {
                                         //resets the error message to an empty string
@@ -284,7 +296,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                         //attempts to sign in the user if the form is validated. displays an error message if an error occurred
                                         if (_formKey.currentState.validate()) {
                                           setState(() {
-                                            showLoaderAndError = true;
+                                            showError = false;
                                             showLoader = true;
                                             _scrollController.jumpTo(
                                                 _scrollController
@@ -298,6 +310,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                             if (mounted)
                                               setState(() {
                                                 showLoader = false;
+                                                showError = true;
                                               });
                                             errorMessage = _auth.error;
                                           }
@@ -306,72 +319,65 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                       child: Container(
                                         height: 50,
                                         alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            color: Color.fromRGBO(
-                                                15, 125, 188, 1)),
+                                        color: Color.fromRGBO(15, 125, 188, 1),
+                                        child: showLoader
+                                            ? CircularProgressIndicator(
+                                                valueColor:
+                                                    AlwaysStoppedAnimation(
+                                                        Colors.white),
+                                              )
+                                            : Text(
+                                                'Login',
+                                                style: TextStyle(
+                                                    color: Color.fromRGBO(
+                                                        246, 248, 250, 1),
+                                                    fontSize: 18,
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                              ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 7),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: InkWell(
+                                        onTap: () {
+                                          //displays a pop up where registered users can reset their password
+                                          forgotPasswordPopUp(context);
+                                        },
                                         child: Text(
-                                          'Login',
+                                          'Forgot Password?',
                                           style: TextStyle(
-                                              color: Color.fromRGBO(
-                                                  246, 248, 250, 1),
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600),
+                                              color: Colors.blue, fontSize: 15),
                                         ),
                                       ),
                                     ),
-
-                                    //shows the loader when the user clicks on log in and an error text if an error occurred during log in
-                                    showLoaderAndError
-                                        ? Container(
-                                            height: 50,
-                                            child: Center(
-                                              child: showLoader
-                                                  ? CircularProgressIndicator()
-                                                  : Text(
-                                                      errorMessage,
-                                                      style: TextStyle(
-                                                          color: Colors.red),
-                                                    ),
-                                            ),
-                                          )
-                                        : Text(''),
 
                                     SizedBox(
                                       height: 20,
                                     ),
 
                                     //displays a button where the users can click to log in with fingerprint
-                                   if (_biometricsAvailable) Center(
-                                        child: FlatButton(
-                                            color: Colors.blue,
-                                            onPressed: authenticating ? null : () async {
-                                              if (await _isBiometricAvailable()) {
-                                                await _getListOfAvailableBiometrics();
-                                                if (pass != null)
-                                                  await _authenticateUser(
-                                                      widget.data['email'],
-                                                      pass);
-                                              }
-                                            },
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.fingerprint,
-                                                  color: Colors.white,
-                                                  size: 25,
-                                                ),
-                                                SizedBox(
-                                                  width: 5,
-                                                ),
-                                                Text('Login with fingerprint',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 16))
-                                              ],
-                                            ))),
+                                    if (_biometricsAvailable)
+                                      Center(
+                                          child: IconButton(
+                                              color: Colors.blue,
+                                              onPressed: authenticating
+                                                  ? null
+                                                  : () async {
+                                                      if (await _isBiometricAvailable()) {
+                                                        await _getListOfAvailableBiometrics();
+                                                        if (pass != null)
+                                                          await _authenticateUser(
+                                                              widget.data[
+                                                                  'email'],
+                                                              pass);
+                                                      }
+                                                    },
+                                              icon: Icon(
+                                                Icons.fingerprint,
+                                                size: 45,
+                                              ))),
                                   ],
                                 ),
                               ),
@@ -382,74 +388,65 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               if (widget.data['provider'] == 'google')
-                                FlatButton(
-                                    minWidth: 150,
-                                    height: 50,
-                                    color: Colors.yellow,
-                                    onPressed: () async {
+                                InkWell(
+                                    onTap: () async {
                                       await googleSignIn(context);
                                     },
-                                    child: Text(
-                                      'Google',
-                                      style: TextStyle(fontSize: 26),
+                                    child: Container(
+                                      height: 60,
+                                      child: Row(
+                                        children: [
+                                          Image.asset('assets/google.jpg'),
+                                          Container(
+                                            alignment: Alignment(0, 0.3),
+                                            child: Text(
+                                              'oogle',
+                                              style: TextStyle(fontSize: 22),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     )),
                               if (widget.data['provider'] == 'facebook')
-                                FlatButton(
-                                    minWidth: 150,
-                                    height: 50,
-                                    color: Colors.blue,
-                                    onPressed: () async {
-                                      await facebookLogin(context);
-                                    },
-                                    child: Text(
-                                      'Facebook',
-                                      style: TextStyle(fontSize: 26),
-                                    )),
+                                InkWell(
+                                  onTap: () async {
+                                    await facebookLogin(context);
+                                  },
+                                  child: Container(
+                                    height: 60,
+                                    child: Row(
+                                      children: [
+                                        Image.asset('assets/facebook.jpg'),
+                                        Container(
+                                            alignment: Alignment(0, 0.5),
+                                            child: Text('acebook',
+                                                style: TextStyle(fontSize: 22)))
+                                      ],
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                           Spacer(),
                           Container(
                             height: 40,
                             alignment: Alignment.centerLeft,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                InkWell(
-                                  onTap: () async {
-                                    widget.togglePage(2);
-                                    await GoogleSignIn().signOut();
-                                    await FacebookLogin().logOut();
-                                  },
-                                  child: Text(
-                                    'Switch account',
-                                    style: TextStyle(
-                                        color: Colors.blue,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
-                                  ),
+                            child: InkWell(
+                              onTap: () async {
+                                widget.togglePage(2);
+                                await GoogleSignIn().signOut();
+                                await FacebookLogin().logOut();
+                              },
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'No, I am not ${widget.data['name']}',
+                                  style: TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
                                 ),
-                                SizedBox(
-                                  width: 5,
-                                ),
-                                Text('or',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                    )),
-                                SizedBox(
-                                  width: 5,
-                                ),
-                                InkWell(
-                                    onTap: () {
-                                      widget.togglePage(3);
-                                    },
-                                    child: Text(
-                                      'Sign Up',
-                                      style: TextStyle(
-                                          color: Colors.blue,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                    )),
-                              ],
+                              ),
                             ),
                           ),
                           Spacer(

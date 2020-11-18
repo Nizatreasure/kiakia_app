@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
 import 'package:flutter_string_encryption/flutter_string_encryption.dart';
+import 'package:kiakia/login_signup/services/database.dart';
 import 'package:min_id/min_id.dart';
 import 'package:localstorage/localstorage.dart';
 
@@ -18,20 +20,27 @@ class _PaystackPaymentState extends State<PaystackPayment> {
   final crypt = new PlatformStringCryptor();
   final key =
       'Jv/hw3jV2+y1kExPu8K+4Q==:ZQGMuXw+5hZZxE0ORsPAhkMAj68d8uNboEUcq9gQIQc=';
+  final liveKey = '1x9Bwe2VJzFA8lD2ow2rkQ==:liACQMx4XueJG2SZ0QSBflCN1qmdYrTQuIwdyUpWsrs=';
   final storage = new LocalStorage('user_data.json');
-  String email = '';
+  String email = '', name = '', number = '';
+
+
 
   @override
   void initState() {
     PaystackPlugin.initialize(publicKey: publicKey);
     super.initState();
-    getUserEmail();
+    getUserDetails();
   }
 
-  getUserEmail() async {
+  getUserDetails() async {
     await storage.ready;
     Map data = await storage.getItem('userData');
-    if (data != null) email = data['email'];
+    if (data != null) {
+      email = data['email'];
+      number = data['number'];
+      name = data['name'];
+    }
   }
 
   //shows the status of the transaction, i.e if it was successful or not
@@ -121,7 +130,7 @@ class _PaystackPaymentState extends State<PaystackPayment> {
   }
 
   //verifies the status of the payment by making a http request
-  void verifyPayment(String reference, String payKey) async {
+  void verifyPayment(String reference, String payKey, int amount) async {
     try {
       Map<String, String> headers = {
         'Content-Type': 'application/json',
@@ -133,6 +142,17 @@ class _PaystackPaymentState extends State<PaystackPayment> {
           headers: headers);
       final Map body = json.decode(response.body);
       showPaymentStatusReport(body['data']['status']);
+      await DatabaseService(
+              timestamp: DateTime.now().millisecondsSinceEpoch.toString(), uid: FirebaseAuth.instance.currentUser.uid)
+          .createNewGasOrder(
+              reference: reference,
+              // size: '3kg',
+              // number: number,
+              // name: name,
+              // quantity: 2,
+              // price: amount,
+              // location: 'Minna-Bida Road',
+              transactionID: MinId.getId('4{w}2{d}3{w}2{d}1{w}'));
     } catch (e) {
       print(e);
     }
@@ -140,7 +160,7 @@ class _PaystackPaymentState extends State<PaystackPayment> {
 
   @override
   Widget build(BuildContext context) {
-    int amount = 500000;
+    int amount = 333000;
     return Center(
       child: FlatButton(
         child: Text('Click me'),
@@ -166,7 +186,7 @@ class _PaystackPaymentState extends State<PaystackPayment> {
           try {
             CheckoutResponse response = await PaystackPlugin.checkout(
               context,
-              method: CheckoutMethod.card,
+              method: CheckoutMethod.selectable,
               charge: charge,
               fullscreen: false,
               logo: Container(
@@ -186,7 +206,7 @@ class _PaystackPaymentState extends State<PaystackPayment> {
                   builder: (context) {
                     return Container();
                   });
-              verifyPayment(response.reference, payKey);
+              verifyPayment(response.reference, payKey, charge.amount);
             }
           } catch (e) {}
         },

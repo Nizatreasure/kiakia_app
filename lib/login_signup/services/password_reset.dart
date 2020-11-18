@@ -1,7 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:kiakia/login_signup/decoration.dart';
 import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
+import 'package:kiakia/login_signup/decoration2.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 
 
@@ -41,7 +41,7 @@ forgotPasswordPopUp(BuildContext myContext) {
                             height: 1.5,
                             fontSize: 18,
                             fontWeight: FontWeight.w500),
-                        decoration: decoration.copyWith(
+                        decoration: decoration2.copyWith(
                           hintText: 'Email address',
                         ),
                         keyboardType: TextInputType.emailAddress,

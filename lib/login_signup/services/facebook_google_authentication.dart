@@ -37,12 +37,14 @@ Future facebookLogin(context) async {
         userExists = data.value;
 
         if (userExists == null) {
-          DatabaseService(uid: user.user.uid).createUser(
+          await DatabaseService(uid: user.user.uid).createUser(
               name: profile['name'],
               email: profile['email'],
               url: profile['picture']['data']['url'],
               isNumberVerified: false,
               provider: 'facebook');
+          await DatabaseService(uid: user.user.uid).createGasMonitor();
+          await _auth.currentUser.updateProfile(displayName: profile['name']);
         }
       } catch (e) {
         if (e.code == 'account-exists-with-different-credential')
@@ -89,16 +91,20 @@ Future googleSignIn(context) async {
     userExists = data.value;
 
     if (userExists == null) {
-      DatabaseService(uid: user.user.uid).createUser(
+     await  DatabaseService(uid: user.user.uid).createUser(
           name: user.user.displayName,
           email: user.user.email,
           url: user.user.photoURL == null ? '' : user.user.photoURL,
           isNumberVerified: false,
           provider: 'google');
-    }
-    else await _database.child('users').child(user.user.uid).update({'provider': 'google'});
-  } catch (e) {
-  }
+
+      await  DatabaseService(uid: user.user.uid).createGasMonitor();
+    } else
+      await _database
+          .child('users')
+          .child(user.user.uid)
+          .update({'provider': 'google'});
+  } catch (e) {}
 }
 
 Future errorDialog(context, text) {

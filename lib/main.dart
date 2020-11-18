@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:kiakia/app_theme.dart';
 import 'package:kiakia/login_signup/authenticate.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
+import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/dashboard.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
@@ -79,6 +82,9 @@ class _MyAppState extends State<MyApp> {
         StreamProvider<User>.value(
           value: AuthenticationService().user,
         ),
+        ChangeNotifierProvider<ChangeButtonNavigationBarIndex>(
+          create: (context) => ChangeButtonNavigationBarIndex(),
+        ),
       ],
 
       //wraps the entire application to ensure that all textfields
@@ -94,7 +100,11 @@ class _MyAppState extends State<MyApp> {
         },
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: Wrapper(),
+          home: Consumer<ChangeButtonNavigationBarIndex>(
+              builder: (context, appState, child) {
+                return child;
+              },
+              child: Wrapper()),
           theme: lightTheme,
         ),
       ),
@@ -110,6 +120,37 @@ class Wrapper extends StatefulWidget {
 class _WrapperState extends State<Wrapper> {
   final storage = new LocalStorage('user_data.json');
   Map userData = {};
+  FlutterLocalNotificationsPlugin flutterNotifications =
+      FlutterLocalNotificationsPlugin();
+
+  Future<void> initializeLocalNotifications() async {
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon');
+    var initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    await flutterNotifications.initialize(initializationSettings,
+        onSelectNotification: selectNotification);
+    await _createNotificationChannel();
+  }
+
+  Future selectNotification(String payload) async {
+    print('payload: $payload');
+  }
+
+  Future<void> _createNotificationChannel() async {
+    var androidNotificationChannel = AndroidNotificationChannel(
+      'kiakia_notification',
+      'Gas Alert',
+      'Information about gas orders, gas level and promos',
+      playSound: true,
+      enableLights: true,
+      enableVibration: true,
+    );
+    await flutterNotifications
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(androidNotificationChannel);
+  }
 
   //query the local storage to find out if the user has stored data
   //if data is stored, the user is taken directly to the login page
@@ -117,6 +158,20 @@ class _WrapperState extends State<Wrapper> {
     await storage.ready;
     userData = await storage.getItem('userData');
     if (mounted) setState(() {});
+  }
+
+  setDatabasePersistence() async {
+    FirebaseDatabase database;
+    database = FirebaseDatabase.instance;
+    await database.setPersistenceEnabled(true);
+    await database.setPersistenceCacheSizeBytes(100000000);
+  }
+
+  @override
+  void initState() {
+    initializeLocalNotifications();
+    setDatabasePersistence();
+    super.initState();
   }
 
   @override

@@ -11,198 +11,150 @@ class AuthenticationHome extends StatefulWidget {
 }
 
 class _AuthenticationHomeState extends State<AuthenticationHome> {
-  PageController _pageController;
-  int currentIndex = 0;
+  int currentIndex = 1;
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _pageController.dispose();
+  toggleLandingPage(int page) {
+    setState(() {
+      currentIndex = page;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    //get the width of the screen within the context from MediaQuery
-    double width = MediaQuery.of(context).size.width;
-
-    return Scaffold(
-      backgroundColor: Color(0xffffffff),
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView(
-                allowImplicitScrolling: true,
-                onPageChanged: (val) {
-                  setState(() {
-                    currentIndex = val;
-                  });
-                },
-                controller: _pageController,
-                children: [
-                  landingPageView(
-                      url: 'https://picsum.photos/200/400',
-                      title: 'Easy Ordering',
-                      text: 'Easing ordering of gas at your convenience'),
-                  landingPageView(
-                      url: 'https://picsum.photos/200/450',
-                      title: 'Gas is for Everyone',
-                      text: 'Making gas an everybody and everyday product'),
-                  landingPageView(
-                      url: 'https://picsum.photos/300/500',
-                      title: 'Clean Energy',
-                      text:
-                          'Everyone can use clean energy no matter where they are'),
-                ]),
-          ),
-          //this widget positions the buttons in the page
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.grey[500], Colors.grey[900]],
-                  stops: [0.05, 0.25]),
-            ),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 30,
-                ),
-                //the pageView indicators are housed inside the row widget
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    indicator(currentIndex, 0),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    indicator(currentIndex, 1),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    indicator(currentIndex, 2),
-                  ],
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                // this container displays the signUp button and is wrapped with InkWell to make it clickable
-                InkWell(
-                  onTap: () {
-                    widget.togglePage(3);
-                  },
-                  child: Container(
-                    width: width,
-                    height: 50,
-                    alignment: Alignment.center,
-                    margin: width > 500
-                        ? EdgeInsets.symmetric(horizontal: 50, vertical: 10)
-                        : EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Theme.of(context).buttonColor),
-                    child: Text(
-                      'SignUp',
-                      style: Theme.of(context).textTheme.button),
-                    ),
-                ),
-
-                // this container displays the login button and is wrapped with InkWell to make it clickable
-                InkWell(
-                  onTap: () {
-                    widget.togglePage(2);
-                  },
-                  child: Container(
-                    width: width,
-                    height: 50,
-                    alignment: Alignment.center,
-                    margin: width > 500
-                        ? EdgeInsets.symmetric(horizontal: 50, vertical: 10)
-                        : EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                            color: Theme.of(context).buttonColor, width: 2)),
-                    child: Text(
-                      'Log In',
-                      style: Theme.of(context).textTheme.button.copyWith(
-                        color: Theme.of(context).buttonColor,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    if (currentIndex == 2)
+      return landingPageView(
+          url: 'assets/landing_page2.jpg',
+          title: 'Gas is for Everyone',
+          text: 'Making gas an everybody and everyday product',
+          value: 0.66,
+          goToLogin: widget.togglePage,
+          toggleLandingPage: toggleLandingPage,
+          currentIndex: currentIndex);
+    if (currentIndex == 3)
+      return landingPageView(
+          url: 'assets/landing_page2.jpg',
+          title: 'Clean Energy',
+          text: 'Everyone can use clean energy no matter where they are',
+          value: 1,
+          goToLogin: widget.togglePage,
+          toggleLandingPage: toggleLandingPage,
+          currentIndex: currentIndex);
+    return landingPageView(
+        url: 'assets/landing_page1.jpg',
+        title: 'Easy Ordering',
+        text: 'Easing ordering of gas at your convenience',
+        value: 0.33,
+        goToLogin: widget.togglePage,
+        toggleLandingPage: toggleLandingPage,
+        currentIndex: currentIndex);
   }
 }
 
-//creates the sliding display at the app landing page
+//creates the three images shown on the landing page
 Widget landingPageView(
-    {@required String url, @required String title, @required String text}) {
-  return Stack(
-    children: [
-      Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                    color: Color.fromRGBO(77, 172, 246, 1),
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold),
+    {@required String url,
+    @required String title,
+    @required String text,
+    @required double value,
+    @required Function toggleLandingPage,
+    @required Function goToLogin,
+    @required currentIndex}) {
+  return Scaffold(
+    backgroundColor: Color(0xffffffff),
+    body: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: LayoutBuilder(builder: (context, viewConstraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: viewConstraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: InkWell(
+                        onTap: () {
+                          goToLogin(2);
+                        },
+                        splashColor: Colors.transparent,
+                        child: Text(
+                          'Skip',
+                          style: TextStyle(
+                              color: Color.fromRGBO(81, 83, 82, 1),
+                              fontWeight: FontWeight.w400,
+                              fontSize: 24),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: Container(
+                        alignment: Alignment(0, 0.6),
+                        child: Image.asset(url),
+                      ),
+                    ),
+                    Expanded(
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                            style: TextStyle(
+                                color: Color.fromRGBO(57, 138, 239, 1),
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600),
+                            children: [
+                              TextSpan(text: '$title\n'),
+                              TextSpan(
+                                  text: text,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 16))
+                            ]),
+                      ),
+                    ),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: 74,
+                          width: 74,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            value: value,
+                            valueColor: AlwaysStoppedAnimation(
+                                Color.fromRGBO(57, 138, 239, 1)),
+                          ),
+                        ),
+                        InkWell(
+                          splashColor: Colors.transparent,
+                          onTap: () {
+                            if (currentIndex < 3)
+                              toggleLandingPage(currentIndex + 1);
+                            else
+                              goToLogin(2);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                                color: Color.fromRGBO(57, 138, 239, 1),
+                                shape: BoxShape.circle),
+                            child: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 30,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              SizedBox(height: 10),
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 21),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        }),
       ),
-      Container(
-        decoration: BoxDecoration(
-          color: Colors.red,
-          gradient: LinearGradient(
-              begin: Alignment.center,
-              end: Alignment.bottomCenter,
-              colors: [Colors.white.withOpacity(0), Colors.grey[500]],
-              stops: [0, 0.9]),
-        ),
-      ),
-    ],
-  );
-}
-
-//constructs the pageView indicator
-Widget indicator(int currentIndex, int pageIndex) {
-  return Container(
-    height: 10,
-    width: 10,
-    decoration: BoxDecoration(
-        color: currentIndex == pageIndex ? Colors.white : Colors.white30,
-        borderRadius: BorderRadius.circular(10)),
+    ),
   );
 }

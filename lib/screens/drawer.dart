@@ -71,8 +71,7 @@ class _MyDrawerState extends State<MyDrawer> {
                                     ),
                                   ),
                                 ),
-                                widget.photoURL == null ||
-                                        widget.photoURL == ''
+                                widget.photoURL == null || widget.photoURL == ''
                                     ? Container(
                                         height: 0,
                                         width: 0,
@@ -101,8 +100,7 @@ class _MyDrawerState extends State<MyDrawer> {
                         ),
                         Text(
                           email,
-                          style: TextStyle(
-                              color: Colors.black54, fontSize: 15),
+                          style: TextStyle(color: Colors.black54, fontSize: 15),
                         ),
                         SizedBox(
                           height: 8,
@@ -123,12 +121,12 @@ class _MyDrawerState extends State<MyDrawer> {
                         SizedBox(
                           height: 5,
                         ),
-                        if (verificationStatus == 'Not Verified' && number != '') Text(
-                           'Status: $verificationStatus',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.red),
-                        ),
+                        if (verificationStatus == 'Not Verified' &&
+                            number != '')
+                          Text(
+                            'Status: $verificationStatus',
+                            style: TextStyle(fontSize: 14, color: Colors.red),
+                          ),
                       ],
                     ),
                   ),
