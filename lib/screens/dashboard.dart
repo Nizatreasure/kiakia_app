@@ -161,6 +161,7 @@ class _DashboardState extends State<Dashboard> {
               ),
               onPressed: () async {
                 await _auth.logOut();
+                Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false).updateCurrentIndex(0);
               },
               label: Text(
                 'Logout',
