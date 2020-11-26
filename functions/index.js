@@ -28,11 +28,7 @@ exports.notifyUser = functions.database.ref('/gas_monitor/{id}/gas_level')
         let sendNotification = false;
 
 
-
-        if (+oldValue.toString() > 20 && +value.toString() <= 20 && +value.toString() > 15) {
-            sendNotification = true;
-        }
-         if (+oldValue.toString() > 15 && +value.toString() <= 15 && +value.toString() > 10) {
+        if (+oldValue.toString() > 15 && +value.toString() <= 15 && +value.toString() > 10) {
             sendNotification = true;
         }
         if(+oldValue.toString() > 10 && +value.toString() <= 10 && +value.toString() > 5) {
@@ -61,7 +57,7 @@ exports.notifyUser = functions.database.ref('/gas_monitor/{id}/gas_level')
             const payload = {
                 notification: {
                     title: +value.toString() > 10 ? `Low gas level for ${name}!` : +value.toString() > 5 ? `Very low gas level for ${name}!` : `Critical gas level for ${name}!`,
-                    body: `You have only ${Math.round(+value.toString())}% of gas remaining. Click to order immediately.`
+                    body: `You have only ${Math.round(+value.toString())}% of gas remaining. Schedule refill now!.`
                 },
                 data: {
                     'click_action': 'FLUTTER_NOTIFICATION_CLICK'
@@ -72,7 +68,7 @@ exports.notifyUser = functions.database.ref('/gas_monitor/{id}/gas_level')
 //                  .create({
 //                     from: 'MG5b51a5028c87ab989bf7491a9cec4fee',
 //                     to: '+2349082377152',
-//                     body: `Dear ${name}, you current have only ${value}% of gas left in your cylinder. Please place your order as soon as possible. \n\n Your gas partner, \n Kiakia`
+//                     body: `Dear ${name}, you have ${value}% of your gas left. Schedule refill now`
 //                   }).then(messages => console.log(messages.sid)).done();
         }
     }

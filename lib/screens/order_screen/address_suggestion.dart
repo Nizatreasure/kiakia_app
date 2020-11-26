@@ -12,7 +12,6 @@ class AddressSuggestionRequest {
   AddressSuggestionRequest(this.sessionToken);
 
   Future<List<AddressSuggestion>> fetchAddress(String input) async {
-    List placesList = [];
     final request =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&language=en&components=country:ng&key=$key&sessiontoken=$sessionToken';
     try {

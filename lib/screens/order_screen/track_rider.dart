@@ -1,15 +1,18 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:kiakia/screens/order_screen/distance.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:kiakia/screens/order_screen/distance.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TrackRider extends StatefulWidget {
+  final Map userLocation, rider;
+  final String transactionID;
+  TrackRider({this.rider, this.userLocation, this.transactionID});
   @override
   _TrackRiderState createState() => _TrackRiderState();
 }
@@ -17,10 +20,7 @@ class TrackRider extends StatefulWidget {
 class _TrackRiderState extends State<TrackRider>
     with AutomaticKeepAliveClientMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  String phoneNumber = '+2348117933576';
   Completer<GoogleMapController> _mapController = Completer();
-  double _originLatitude = 9.0611743, _originLongitude = 7.4894103;
-  double _destinationLatitude = 9.539399, _destinationLongitude = 6.468836;
   Map<MarkerId, Marker> markers = {};
   Map<PolylineId, Polyline> polyLines = {};
   List<LatLng> polylineCoordinates = [];
@@ -28,11 +28,9 @@ class _TrackRiderState extends State<TrackRider>
   String googleApiKey = 'AIzaSyDuc6Wz_ssKWEiNA4xJyUzT812LZgxnVUc';
   String url =
       'https://maps.googleapis.com/maps/api/distancematrix/json?origins=';
-  bool _serviceEnabled = true;
-  LocationPermission _permissionGranted;
-  Position currentPosition;
+
   CameraPosition initialCameraPosition;
-  StreamSubscription<Position> positionStream;
+  StreamSubscription riderLocationStream;
   String distance = '', time = '', originAddress = '';
   String error;
 
@@ -40,27 +38,51 @@ class _TrackRiderState extends State<TrackRider>
     _mapController.complete(controller);
 
     _addMarker(
-        id: 'Minna',
-        position: LatLng(currentPosition.latitude, currentPosition.longitude),
+        id: 'Rider Location',
+        position: LatLng(widget.rider['lat'], widget.rider['lng']),
         descriptor:
-            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue));
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        title: 'Rider\'s Location');
 
     _addMarker(
-        id: 'Munch Box',
-        position: LatLng(_destinationLatitude, _destinationLongitude),
+        id: 'Delivery Location',
+        position:
+            LatLng(widget.userLocation['lat'], widget.userLocation['lng']),
         descriptor:
-            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed));
-    _getPolyline();
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        title: 'Delivery Location');
+    _getPolyline(widget.rider['lat'], widget.rider['lng']);
   }
 
-  _addMarker({String id, BitmapDescriptor descriptor, LatLng position}) {
+  _addMarker(
+      {String id, BitmapDescriptor descriptor, LatLng position, String title}) {
     MarkerId markerId = MarkerId(id);
     Marker marker = Marker(
       markerId: markerId,
       icon: descriptor,
       position: position,
+      infoWindow: InfoWindow(title: title),
     );
     markers[markerId] = marker;
+  }
+
+  _getRiderLocation() {
+    riderLocationStream = FirebaseDatabase.instance
+        .reference()
+        .child('Transactions')
+        .child(FirebaseAuth.instance.currentUser.uid)
+        .child(widget.transactionID)
+        .onValue
+        .listen((event) {
+      final data = event.snapshot.value;
+      if (event != null) {
+        setState(() {
+          _getPolyline(data['lat'], data['lng']);
+          changeMarkerLocation(data['lat'], data['lng']);
+          setTimeDistance(data['lat'], data['lng']);
+        });
+      }
+    });
   }
 
   _addPolyline(
@@ -78,10 +100,10 @@ class _TrackRiderState extends State<TrackRider>
   }
 
   //sets the time, distance and current location of the rider
-  void setTimeDistance() async {
-    if (currentPosition != null) {
+  void setTimeDistance(lat, lng) async {
+    if (lat != null) {
       Distance myDistance = Distance(url +
-          '${currentPosition.latitude},${currentPosition.longitude}&destinations=$_destinationLatitude, $_destinationLongitude&key=' +
+          '$lat,$lng&destinations=${widget.userLocation['lat']}, ${widget.userLocation['lng']}&key=' +
           googleApiKey);
       await myDistance.getDistance();
       if (mounted) {
@@ -95,12 +117,12 @@ class _TrackRiderState extends State<TrackRider>
   }
 
   //gets the coordinates between the origin and destination location that would be used to draw the polylines
-  _getPolyline() async {
+  _getPolyline(lat, lng) async {
     if (mounted) {
       PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
         googleApiKey,
-        PointLatLng(currentPosition.latitude, currentPosition.longitude),
-        PointLatLng(_destinationLatitude, _destinationLongitude),
+        PointLatLng(lat, lng),
+        PointLatLng(widget.userLocation['lat'], widget.userLocation['lng']),
         travelMode: TravelMode.driving,
       );
 
@@ -115,71 +137,25 @@ class _TrackRiderState extends State<TrackRider>
     }
   }
 
-  //requests for location permission from the users
-  getLocationPermission() async {
-    try {
-      _serviceEnabled = await Geolocator.isLocationServiceEnabled();
-
-      if (_serviceEnabled) {
-        _permissionGranted = await Geolocator.checkPermission();
-        if (_permissionGranted == LocationPermission.whileInUse ||
-            _permissionGranted == LocationPermission.always) {
-          currentPosition = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high,
-          );
-          setState(() {});
-          setTimeDistance();
-          positionStream = Geolocator.getPositionStream(
-                  desiredAccuracy: LocationAccuracy.high)
-              .listen((Position position) {
-            currentPosition = position;
-            changeMarkerLocation();
-            _getPolyline();
-            setTimeDistance();
-          });
-        } else {
-          if (mounted) {
-            setState(() {});
-            getLocationPermission();
-          }
-        }
-      } else {
-        if (mounted) {
-          setState(() {});
-          getLocationPermission();
-        }
-      }
-    } on PlatformException catch (e) {
-      if (e.code == 'PERMISSION_DENIED') {
-        error = e.message;
-      } else if (e.code == 'LOCATION_SERVICES_DISABLED') {
-        error = e.message;
-      } else
-        error = 'error';
-    }
-  }
-
   //updates the location pointer as the current location changes
-  changeMarkerLocation() async {
+  changeMarkerLocation(lat, lng) async {
     if (mounted) {
       final GoogleMapController controller = await _mapController.future;
       double zoomLevel = await controller.getZoomLevel();
-      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-          target: LatLng(currentPosition.latitude, currentPosition.longitude),
-          zoom: zoomLevel)));
+      controller.animateCamera(CameraUpdate.newCameraPosition(
+          CameraPosition(target: LatLng(lat, lng), zoom: zoomLevel)));
 
       controller.dispose();
 
       setState(() {
-        markers.remove(MarkerId('Minna'));
+        markers.remove(MarkerId('Rider Location'));
         markers.putIfAbsent(
-            MarkerId('Minna'),
+            MarkerId('Rider Location'),
             () => Marker(
                   icon: BitmapDescriptor.defaultMarkerWithHue(
                       BitmapDescriptor.hueBlue),
-                  markerId: MarkerId('Minna'),
-                  position: LatLng(
-                      currentPosition.latitude, currentPosition.longitude),
+                  markerId: MarkerId('Rider Location'),
+                  position: LatLng(lat, lng),
                 ));
       });
     }
@@ -189,15 +165,14 @@ class _TrackRiderState extends State<TrackRider>
   void initState() {
     super.initState();
     polylinePoints = PolylinePoints();
-    getLocationPermission();
+    setTimeDistance(widget.rider['lat'], widget.rider['lng']);
+    _getRiderLocation();
   }
 
   @override
   void dispose() {
     super.dispose();
-    if (positionStream != null) {
-      positionStream.cancel();
-    }
+    if (riderLocationStream != null) riderLocationStream.cancel();
   }
 
   launchURL(url) async {
@@ -211,10 +186,8 @@ class _TrackRiderState extends State<TrackRider>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    initialCameraPosition = currentPosition == null
-        ? CameraPosition(
-            target: LatLng(_originLatitude, _originLongitude), zoom: 17)
-        : initialCameraPosition;
+    initialCameraPosition = CameraPosition(
+        target: LatLng(widget.rider['lat'], widget.rider['lng']), zoom: 12);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -251,213 +224,90 @@ class _TrackRiderState extends State<TrackRider>
         elevation: 0,
       ),
       endDrawer: Drawer(),
-      body: trackRiderBody(),
-    );
-  }
-
-//decides what to show base on the permission granted by the user
-  Widget trackRiderBody() {
-    if (_serviceEnabled) {
-      switch (_permissionGranted) {
-        case LocationPermission.whileInUse:
-        case LocationPermission.always:
-          return currentPosition == null
-              ? Center(child: CircularProgressIndicator())
-              : Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    GoogleMap(
-                      markers: Set<Marker>.of(markers.values),
-                      myLocationEnabled: true,
-                      polylines: Set<Polyline>.of(polyLines.values),
-                      onMapCreated: _onMapCreated,
-                      initialCameraPosition: initialCameraPosition,
-                    ),
-                    distance == null || distance == ''
-                        ? Container(
-                            height: 0,
-                            width: 0,
-                          )
-                        : Container(
-                            width: MediaQuery.of(context).size.width,
-                            constraints:
-                                BoxConstraints(maxHeight: 220, maxWidth: 400),
-                            decoration: BoxDecoration(
-                                color: Color.fromRGBO(77, 172, 246, 1),
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(20),
-                                    topRight: Radius.circular(20))),
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IntrinsicHeight(
-                                    child: Row(
-                                      children: [
-                                        Text(distance,
-                                            style: TextStyle(fontSize: 18)),
-                                        VerticalDivider(
-                                          width: 20,
-                                          color: Colors.black,
-                                          thickness: 2,
-                                        ),
-                                        Text(
-                                            time == 'Unknown'
-                                                ? time
-                                                : time + ' away',
-                                            style: TextStyle(fontSize: 18))
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 10),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: AutoSizeText(
-                                        originAddress,
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 18),
-                                        maxLines: 5,
-                                      ),
-                                    ),
-                                  ),
-                                  ListTile(
-                                    contentPadding: EdgeInsets.only(left: 0),
-                                    leading: CircleAvatar(
-                                      backgroundImage:
-                                          ExactAssetImage('assets/niza.jpg'),
-                                    ),
-                                    onTap: () {
-                                      launchURL('tel: $phoneNumber');
-                                    },
-                                    title: Text(
-                                      'Undie Ebenezer',
-                                      style: TextStyle(fontSize: 18),
-                                    ),
-                                    subtitle: Text(
-                                      phoneNumber,
-                                      style: TextStyle(
-                                          fontSize: 16, color: Colors.white),
-                                    ),
-                                    trailing: Icon(
-                                      Icons.phone,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                  ],
-                );
-        case LocationPermission.denied:
-        case LocationPermission.deniedForever:
-          return Align(
-            alignment: Alignment(0, -0.5),
-            child: Container(
-              height: 130,
-              width: 230,
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Please grant this app location access to continue',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  Spacer(),
-                  Row(
+      body: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          GoogleMap(
+            myLocationButtonEnabled: false,
+            markers: Set<Marker>.of(markers.values),
+            myLocationEnabled: false,
+            polylines: Set<Polyline>.of(polyLines.values),
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: initialCameraPosition,
+          ),
+          distance == null || distance == ''
+              ? Container(
+                  height: 0,
+                  width: 0,
+                )
+              : Container(
+                  width: MediaQuery.of(context).size.width,
+                  constraints: BoxConstraints(maxHeight: 220, maxWidth: 400),
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).buttonColor,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20))),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text('Go back',
-                            style: TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16)),
+                      IntrinsicHeight(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                          child: Row(
+                            children: [
+                              Text(distance, style: TextStyle(fontSize: 18)),
+                              VerticalDivider(
+                                width: 20,
+                                color: Colors.black,
+                                thickness: 2,
+                              ),
+                              Text(time == 'Unknown' ? time : time + ' away',
+                                  style: TextStyle(fontSize: 18))
+                            ],
+                          ),
+                        ),
                       ),
-                      Spacer(),
-                      InkWell(
-                        onTap: () async {
-                          if (_permissionGranted == LocationPermission.denied) {
-                            _permissionGranted =
-                                await Geolocator.requestPermission();
-                            setState(() {});
-                          } else {
-                            await Geolocator.openAppSettings();
-                          }
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10, left: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: AutoSizeText(
+                            originAddress,
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 18),
+                            maxLines: 5,
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.only(left: 20, right: 10),
+                        leading: CircleAvatar(
+                          radius: 25,
+                          backgroundImage: NetworkImage(widget.rider['pictureURL']),
+                        ),
+                        onTap: () {
+                          launchURL('tel: ${widget.rider['number']}');
                         },
-                        child: Text('Grant Access',
-                            style: TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16)),
+                        title: Text(
+                          widget.rider['name'],
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        subtitle: Text(
+                          widget.rider['number'],
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                        trailing: Icon(
+                          Icons.phone,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-          );
-        default:
-          return Container(
-            color: Colors.white30,
-          );
-      }
-    } else {
-      return Align(
-        alignment: Alignment(0, -0.5),
-        child: Container(
-          height: 130,
-          width: 230,
-          padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Please turn on device location to continue',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              Spacer(),
-              Row(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text('Go back',
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16)),
-                  ),
-                  Spacer(),
-                  InkWell(
-                    onTap: () async {
-                      await Geolocator.openLocationSettings();
-                    },
-                    child: Text('Open Settings',
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+                ),
+        ],
+      ),
+    );
   }
 
   @override

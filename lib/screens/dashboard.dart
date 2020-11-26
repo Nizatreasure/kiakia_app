@@ -4,18 +4,14 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
-import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
-import 'package:kiakia/not_part.dart';
-import 'package:kiakia/paystack_payment.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/home.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/order.dart';
+import 'package:kiakia/screens/bottom_navigation_bar_items/profile.dart';
 import 'package:kiakia/screens/drawer.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
-import 'package:time_machine/time_machine.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -23,24 +19,19 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  AuthenticationService _auth = AuthenticationService();
   final storage = new LocalStorage('user_data.json');
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentBottomNavigationBarIndex = 0;
   String photoURL;
+  Map snap;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   List<String> _navigationBarTitle = [
     'Dashboard',
     'Order',
-    'Wallet',
-    'Settings'
+    'Profile'
   ];
   StreamSubscription<Event> userDataStream;
 
-
-  _initializeTime() async {
-    await TimeMachine.initialize({'rootBundle': rootBundle});
-  }
 
   //saves user information to their local storage
   _saveUserDataToStorage({name, email, number, status, provider}) async {
@@ -60,8 +51,8 @@ class _DashboardState extends State<Dashboard> {
     final DatabaseReference database = FirebaseDatabase.instance.reference();
     userDataStream =
         database.child('users').child(uid).onValue.listen((event) async {
-      Map snap = event.snapshot.value;
-      if (snap.isNotEmpty) {
+          snap = event.snapshot.value;
+      if (snap != null && snap.isNotEmpty) {
         photoURL = snap['pictureURL'];
         _saveUserDataToStorage(
           name: snap['name'],
@@ -108,16 +99,17 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
-    _initializeTime();
     _getUserInformation();
     _firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
       print('onMessage: $message');
     }, onLaunch: (Map<String, dynamic> message) async {
-      Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false).updateCurrentIndex(1);
+      Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false)
+          .updateCurrentIndex(1);
       print('onLaunch: $message');
     }, onResume: (Map<String, dynamic> message) async {
-      Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false).updateCurrentIndex(1);
+      Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false)
+          .updateCurrentIndex(1);
       print('onResume: $message');
     });
   }
@@ -130,14 +122,14 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    _currentBottomNavigationBarIndex = Provider.of<ChangeButtonNavigationBarIndex>(context).currentIndex;
+    _currentBottomNavigationBarIndex =
+        Provider.of<ChangeButtonNavigationBarIndex>(context).currentIndex;
     List<Widget> _bottomNavigationBarItemBody = [
-      Home(showNumberNotVerified,
-          registerUserNumber),
+      Home(showNumberNotVerified, registerUserNumber),
       Order(),
-      PaystackPayment(),
-      NotPart(),
+      Profile(photoURL, snap),
     ];
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -150,29 +142,6 @@ class _DashboardState extends State<Dashboard> {
             _scaffoldKey.currentState.openDrawer();
           },
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: FlatButton.icon(
-              icon: Icon(
-                Icons.person,
-                color: Colors.blue,
-                size: 16,
-              ),
-              onPressed: () async {
-                await _auth.logOut();
-                Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false).updateCurrentIndex(0);
-              },
-              label: Text(
-                'Logout',
-                style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14),
-              ),
-            ),
-          )
-        ],
         title: Text(
           _navigationBarTitle[_currentBottomNavigationBarIndex],
           style: TextStyle(
@@ -194,7 +163,8 @@ class _DashboardState extends State<Dashboard> {
           currentIndex: _currentBottomNavigationBarIndex,
           backgroundColor: Theme.of(context).buttonColor,
           onTap: (index) {
-            Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false).updateCurrentIndex(index);
+            Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false)
+                .updateCurrentIndex(index);
           },
           type: BottomNavigationBarType.fixed,
           items: [
@@ -230,19 +200,8 @@ class _DashboardState extends State<Dashboard> {
                           ? Color.fromRGBO(255, 255, 255, 0.5)
                           : Theme.of(context).buttonColor,
                     ),
-                    child: Icon(Icons.credit_card)),
-                label: 'Wallet'),
-            BottomNavigationBarItem(
-                icon: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: _currentBottomNavigationBarIndex == 3
-                          ? Color.fromRGBO(255, 255, 255, 0.5)
-                          : Theme.of(context).buttonColor,
-                    ),
                     child: Icon(Icons.settings)),
-                label: 'Settings')
+                label: 'Profile')
           ]),
     );
   }

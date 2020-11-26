@@ -34,7 +34,7 @@ class _OrderDetailsState extends State<OrderDetails> {
   String phoneNumber = '+2348117933576';
   String selectedPaymentMethod;
   final formatCurrency =
-      new NumberFormat.currency(locale: 'en_US', symbol: '# ');
+      new NumberFormat.currency(locale: 'en_US', symbol: '\u{20A6} ');
   String googleApiKey = 'AIzaSyDuc6Wz_ssKWEiNA4xJyUzT812LZgxnVUc';
   GoogleMapController _mapController;
   double orderTotal = 0;
@@ -122,9 +122,12 @@ class _OrderDetailsState extends State<OrderDetails> {
               FlatButton(
                   onPressed: () {
                     Navigator.pop(context);
-                   if (status == 'success') {
+                    if (status == 'success') {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => OrderReceived()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => OrderReceived()));
                     }
                   },
                   child: Text(
@@ -168,7 +171,8 @@ class _OrderDetailsState extends State<OrderDetails> {
   }
 
   //verifies the status of the payment by making a http request
-  void verifyPayment(String reference, String payKey, int amount) async {
+  void verifyPayment(
+      String reference, String payKey, int amount, paymentMethod) async {
     try {
       Map<String, String> headers = {
         'Content-Type': 'application/json',
@@ -189,6 +193,9 @@ class _OrderDetailsState extends State<OrderDetails> {
               name: name,
               order: widget.details,
               location: widget.location,
+              deliveryCharge: deliveryCharge.toString(),
+              total: total.toString(),
+              paymentMethod: paymentMethod,
               transactionID: MinId.getId('4{w}2{d}3{w}2{d}1{w}'));
       saveAddressToDevice(
           address: widget.location['address'],
@@ -274,33 +281,34 @@ class _OrderDetailsState extends State<OrderDetails> {
                     SizedBox(
                       width: 15,
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(package,
-                            style: TextStyle(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyText2
-                                    .color
-                                    .withOpacity(0.75),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 17)),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        Text(widget.details[package]['size'],
-                            style: TextStyle(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyText2
-                                    .color
-                                    .withOpacity(0.75),
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16)),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(package,
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2
+                                      .color
+                                      .withOpacity(0.75),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 17)),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Text(widget.details[package]['size'],
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2
+                                      .color
+                                      .withOpacity(0.75),
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16)),
+                        ],
+                      ),
                     ),
-                    Spacer(),
                     Text(
                         formatCurrency.format(
                             double.parse(widget.details[package]['amount'])),
@@ -485,6 +493,13 @@ class _OrderDetailsState extends State<OrderDetails> {
                   ),
                   value: 'Bank',
                 ),
+                DropdownMenuItem(
+                  child: Text(
+                    'Pay on delivery',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  value: 'Pay on delivery',
+                ),
               ],
               value: selectedPaymentMethod,
               onChanged: (val) {
@@ -534,10 +549,11 @@ class _OrderDetailsState extends State<OrderDetails> {
                     ..email = email
                     ..reference = MinId.getId('4{w}2{d}5{w}1{d}6{w}2{d}1{w}')
                     ..accessCode = await getAccessCode(
-                        payKey: payKey,
-                        ref: charge.reference,
-                        amount: charge.amount,
-                        email: charge.email);
+                      payKey: payKey,
+                      ref: charge.reference,
+                      amount: charge.amount,
+                      email: charge.email,
+                    );
 
                   Navigator.pop(context);
                   CheckoutResponse response = await PaystackPlugin.checkout(
@@ -564,7 +580,8 @@ class _OrderDetailsState extends State<OrderDetails> {
                         builder: (context) {
                           return Container();
                         });
-                    verifyPayment(response.reference, payKey, charge.amount);
+                    verifyPayment(response.reference, payKey, charge.amount,
+                        selectedPaymentMethod);
                   }
                 } catch (e) {
                   Navigator.pop(context);
@@ -579,6 +596,94 @@ class _OrderDetailsState extends State<OrderDetails> {
                     ),
                   );
                 }
+              }
+              if (selectedPaymentMethod == 'Pay on delivery') {
+                bool disableButton = false;
+                showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) {
+                      return StatefulBuilder(
+                        builder: (context, setState){
+                          return AlertDialog(
+                            content: RichText(
+                              text: TextSpan(
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2
+                                      .copyWith(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500),
+                                  children: [
+                                    TextSpan(text: 'Pay   '),
+                                    TextSpan(
+                                        text: '${formatCurrency.format(total)}  ',
+                                        style:
+                                        TextStyle(fontWeight: FontWeight.w900)),
+                                    TextSpan(text: 'cash on delivery?')
+                                  ]),
+                            ),
+                            actions: [
+                              FlatButton(
+                                  onPressed: disableButton ? null : () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('NO')),
+                              FlatButton(
+                                  onPressed: disableButton ? null : () async {
+                                    setState((){ disableButton = true;});
+                                    try {
+                                      final response =
+                                      await get('https://www.google.com');
+                                      if (response.statusCode == 200) {
+                                        DatabaseService(
+                                            timestamp: DateTime.now()
+                                                .millisecondsSinceEpoch
+                                                .toString(),
+                                            uid: FirebaseAuth
+                                                .instance.currentUser.uid)
+                                            .createNewGasOrder(
+                                            number: number,
+                                            name: name,
+                                            order: widget.details,
+                                            location: widget.location,
+                                            deliveryCharge:
+                                            deliveryCharge.toString(),
+                                            total: total.toString(),
+                                            paymentMethod: 'Cash',
+                                            transactionID: MinId.getId(
+                                                '4{w}2{d}3{w}2{d}1{w}'))
+                                            .then((value) async {
+                                          await saveAddressToDevice(
+                                              address: widget.location['address'],
+                                              lat: widget.location['lat'],
+                                              lng: widget.location['lng']);
+                                          showPaymentStatusReport('success');
+                                        });
+                                      }
+                                    } catch (e) {
+                                      Navigator.pop(context);
+                                      _scaffoldKey.currentState.showSnackBar(
+                                        SnackBar(
+                                          backgroundColor: Colors.red[900],
+                                          content: Text(
+                                            'An error occurred. Try again',
+                                            style: TextStyle(fontSize: 18),
+                                          ),
+                                          duration: Duration(seconds: 3),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: disableButton ? SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator()) : Text('YES')),
+                            ],
+                          );
+                        },
+                      );
+                    });
               }
             },
             child: Container(

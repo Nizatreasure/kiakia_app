@@ -1,7 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:kiakia/screens/profile.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kiakia/login_signup/services/authentication.dart';
+import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
+import 'package:kiakia/screens/transaction_history.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MyDrawer extends StatefulWidget {
   final String photoURL;
@@ -13,7 +19,7 @@ class MyDrawer extends StatefulWidget {
 
 class _MyDrawerState extends State<MyDrawer> {
   final storage = new LocalStorage('user_data.json');
-  String name, number, email, verificationStatus;
+  String name;
   Map<String, dynamic> user;
 
   //the function that gets the user data from the local storage
@@ -22,14 +28,17 @@ class _MyDrawerState extends State<MyDrawer> {
     user = await storage.getItem('userData');
     if (user != null) {
       name = user['name'];
-      number = user['number'];
-      if (user['status'] == true)
-        verificationStatus = 'Verified';
-      else
-        verificationStatus = 'Not Verified';
-      email = user['email'];
       setState(() {});
     }
+  }
+
+  void launchWhatsApp(
+      {@required String number, @required String message}) async {
+    String url = "whatsapp://send?phone=$number&text=${Uri.parse(message)}";
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {}
   }
 
   @override
@@ -40,6 +49,13 @@ class _MyDrawerState extends State<MyDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    List initials = [];
+    if (user != null) {
+      for (int i = 0; i < name.split(' ').length; i++) {
+        if (name.split(' ')[i] != '' && initials.length < 2)
+          initials.add(name.split(' ')[i][0]);
+      }
+    }
     return Drawer(
       child: ListView(
         children: [
@@ -48,89 +64,248 @@ class _MyDrawerState extends State<MyDrawer> {
             padding: EdgeInsets.all(10),
             child: user == null
                 ? Container(
+                    height: 150,
                     color: Color.fromRGBO(77, 172, 246, 1),
                   )
-                : InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => Profile()));
-                    },
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                            radius: 30,
-                            child: Stack(
-                              children: [
-                                Center(
-                                  child: Text(
-                                    name[0],
-                                    style: TextStyle(
-                                      fontSize: 40,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                : Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: widget.photoURL == null || widget.photoURL == '' ? Colors.white : Color.fromRGBO(77, 172, 246, 1),
+                        child: widget.photoURL == null || widget.photoURL == ''
+                            ? Center(
+                                child: Text(
+                                  '${initials[0].toUpperCase()}${initials[1].toUpperCase()}',
+                                  style: TextStyle(
+                                    fontSize: 50,
+                                    fontWeight: FontWeight.w400,
                                   ),
                                 ),
-                                widget.photoURL == null || widget.photoURL == ''
-                                    ? Container(
-                                        height: 0,
-                                        width: 0,
-                                      )
-                                    : Center(
-                                        child: ClipOval(
-                                            child: Image.network(
-                                          widget.photoURL,
-                                          fit: BoxFit.cover,
-                                        )),
-                                      )
-                              ],
-                            )),
-                        SizedBox(
-                          height: 6,
-                        ),
-                        Text(
-                          name,
-                          style: TextStyle(
-                              fontSize: 23,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Text(
-                          email,
-                          style: TextStyle(color: Colors.black54, fontSize: 15),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Text(
-                          number == ''
-                              ? 'No number for account. Please add your number'
-                              : 'Number: 0${number.substring(4, 14)}',
-                          maxLines: 2,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: number == ''
-                                ? Colors.red[400]
-                                : Color.fromRGBO(10, 10, 10, 0.7),
+                              )
+                            : ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                                child: CachedNetworkImage(
+                                  imageUrl: widget.photoURL,
+                                  placeholder: (context, url) =>
+                                      CircleAvatar(
+                                          radius: 50,
+                                          backgroundColor: Colors.white,
+                                          child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) =>
+                                      Icon(Icons.person),
+                                ),
+                              ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        name,
+                        style: TextStyle(
+                            fontSize: 23,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                          Provider.of<ChangeButtonNavigationBarIndex>(context,
+                                  listen: false)
+                              .updateCurrentIndex(2);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                  color: Color.fromRGBO(255, 255, 255, 0.5),
+                                  width: 2)),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          child: Text(
+                            'view profile',
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        if (verificationStatus == 'Not Verified' &&
-                            number != '')
-                          Text(
-                            'Status: $verificationStatus',
-                            style: TextStyle(fontSize: 14, color: Colors.red),
-                          ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      )
+                    ],
                   ),
           ),
+          SizedBox(height: 30),
+          InkWell(
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => TransactionHistory()));
+            },
+            child: Container(
+              padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
+              child: Row(
+                children: [
+                  Icon(
+                    FontAwesomeIcons.history,
+                    size: 19,
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .color
+                        .withOpacity(0.75),
+                  ),
+                  SizedBox(width: 20),
+                  Text(
+                    'Transaction History',
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .color
+                          .withOpacity(0.75),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 30),
+          InkWell(
+            child: Container(
+              padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
+              child: Row(
+                children: [
+                  Icon(
+                    FontAwesomeIcons.question,
+                    size: 19,
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .color
+                        .withOpacity(0.75),
+                  ),
+                  SizedBox(width: 20),
+                  Text(
+                    'FAQ',
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .color
+                          .withOpacity(0.75),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 30),
+          InkWell(
+            child: Container(
+              padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
+              child: Row(
+                children: [
+                  Icon(
+                    FontAwesomeIcons.addressBook,
+                    size: 19,
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .color
+                        .withOpacity(0.75),
+                  ),
+                  SizedBox(width: 20),
+                  Text(
+                    'About',
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .color
+                          .withOpacity(0.75),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 30),
+          InkWell(
+            onTap: () {
+              launchWhatsApp(
+                  number: "+2349082377152", message: "My name is Niza");
+            },
+            child: Container(
+              padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.call,
+                    size: 19,
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .color
+                        .withOpacity(0.75),
+                  ),
+                  SizedBox(width: 20),
+                  Text(
+                    'Contact Us',
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .color
+                          .withOpacity(0.75),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 30),
+          InkWell(
+            onTap: () async {
+              await AuthenticationService().logOut();
+              Provider.of<ChangeButtonNavigationBarIndex>(context,
+                      listen: false)
+                  .updateCurrentIndex(0);
+            },
+            child: Container(
+              padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.person,
+                    size: 19,
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .color
+                        .withOpacity(0.75),
+                  ),
+                  SizedBox(width: 20),
+                  Text(
+                    'Logout',
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .color
+                          .withOpacity(0.75),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          )
         ],
       ),
     );

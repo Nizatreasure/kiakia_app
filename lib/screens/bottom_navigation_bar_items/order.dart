@@ -21,14 +21,14 @@ class _OrderState extends State<Order> {
   Map location = {};
   static final String key = 'AIzaSyDuc6Wz_ssKWEiNA4xJyUzT812LZgxnVUc';
   final storage = new LocalStorage('user_data.json');
-  bool isVerified = false;
+  bool isVerified = false, showLoader = false;
   String number;
 
   //gets the location of the user if any has been saved
   getLocationFromStorage() async {
     await storage.ready;
     Map storedLocation = await storage.getItem('location');
-    if (storedLocation != null && storedLocation.isNotEmpty) {
+    if (storedLocation != null && storedLocation.isNotEmpty && _controller.text.isEmpty) {
       location = storedLocation;
       _controller.text = location['address'];
     }
@@ -43,15 +43,15 @@ class _OrderState extends State<Order> {
     packageDetails.remove(key);
   }
 
-  addItemsToMap(String key, Map value) {
+  addItemsToMap(String key, dynamic value) {
     packageDetails.putIfAbsent(key, () => value);
   }
 
-  Future convertPlaceIdToLatLng(String placeId, String sessionToken) async {
+  Future convertPlaceIdToLatLng(data, String sessionToken) async {
     Map locationLatLng = {};
     try {
       final response = await get(
-          'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$key&sessiontoken=$sessionToken');
+          'https://maps.googleapis.com/maps/api/place/details/json?place_id=${data.placeId}&fields=geometry&key=$key&sessiontoken=$sessionToken');
       if (response.statusCode == 200) {
         final result = json.decode(response.body);
         if (result['status'] == 'OK') {
@@ -61,9 +61,19 @@ class _OrderState extends State<Order> {
               'lng', () => result['result']['geometry']['location']['lng']);
           location = locationLatLng;
         }
+        location.putIfAbsent('address', () => data.description);
+      }
+      if (showLoader) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => OrderDetails(packageDetails, location)));
+        setState(() {
+          showLoader = false;
+        });
       }
     } catch (e) {
-      convertPlaceIdToLatLng(placeId, sessionToken);
+      convertPlaceIdToLatLng(data, sessionToken);
     }
   }
 
@@ -159,7 +169,7 @@ class _OrderState extends State<Order> {
             width: width,
             padding: EdgeInsets.fromLTRB(20, 30, 20, 20),
             decoration: BoxDecoration(
-                color: Theme.of(context).buttonColor.withOpacity(0.25),
+                color: Theme.of(context).buttonColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,10 +190,9 @@ class _OrderState extends State<Order> {
                         query: _controller.text,
                         delegate: AddressSearch(sessionToken));
                     if (result != null) {
+                      location = {};
                       _controller.text = result.description;
-                      await convertPlaceIdToLatLng(
-                          result.placeId, sessionToken);
-                      location.putIfAbsent('address', () => result.description);
+                      await convertPlaceIdToLatLng(result, sessionToken);
                     }
                   },
                   decoration: InputDecoration(
@@ -209,8 +218,12 @@ class _OrderState extends State<Order> {
           SizedBox(height: 25),
           FlatButton(
             height: 45,
-            onPressed: () {
+            onPressed: () async {
+              await getLocationFromStorage();
               if (number == null || number == '') {
+                setState(() {
+                  showLoader = false;
+                });
                 Scaffold.of(context).showSnackBar(
                   SnackBar(
                     backgroundColor: Colors.red[900],
@@ -222,6 +235,9 @@ class _OrderState extends State<Order> {
                   ),
                 );
               } else if (isVerified == false) {
+                setState(() {
+                  showLoader = false;
+                });
                 Scaffold.of(context).showSnackBar(
                   SnackBar(
                     backgroundColor: Colors.red[900],
@@ -233,6 +249,9 @@ class _OrderState extends State<Order> {
                   ),
                 );
               } else if (packageDetails == null || packageDetails.isEmpty) {
+                setState(() {
+                  showLoader = false;
+                });
                 Scaffold.of(context).showSnackBar(
                   SnackBar(
                     backgroundColor: Colors.red[900],
@@ -243,7 +262,16 @@ class _OrderState extends State<Order> {
                     duration: Duration(seconds: 2),
                   ),
                 );
-              } else if (location == null || location.isEmpty) {
+              } else if ((_controller.text != null &&
+                      _controller.text.trim().isNotEmpty) &&
+                  (location['lat'] == null || location['lat'] == '')) {
+                setState(() {
+                  showLoader = true;
+                });
+              } else if (_controller.text == null || _controller.text.isEmpty) {
+                setState(() {
+                  showLoader = false;
+                });
                 Scaffold.of(context).showSnackBar(
                   SnackBar(
                     backgroundColor: Colors.red[900],
@@ -260,12 +288,19 @@ class _OrderState extends State<Order> {
                     MaterialPageRoute(
                         builder: (context) =>
                             OrderDetails(packageDetails, location)));
+                setState(() {
+                  showLoader = false;
+                });
               }
             },
-            child: Text(
-              'Next',
-              style: Theme.of(context).textTheme.button,
-            ),
+            child: showLoader
+                ? CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  )
+                : Text(
+                    'Next',
+                    style: Theme.of(context).textTheme.button,
+                  ),
             color: Theme.of(context).buttonColor,
           ),
           SizedBox(
@@ -316,112 +351,115 @@ class _GasPackagesState extends State<GasPackages> {
   @override
   Widget build(BuildContext context) {
     details['size'] = widget.packageSize;
-    return Container(
-      padding: EdgeInsets.all(10),
-      width: (widget.width - 40) / 2 - 10,
-      decoration: BoxDecoration(
-          color: Theme.of(context).buttonColor.withOpacity(0.25),
-          borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 60,
-            alignment: Alignment.center,
-            child: Image.asset(
-              'assets/gas_cylinder3.jpg',
+    return InkWell(
+      onTap: () {
+        details['quantity'] = _controller.text;
+        details['amount'] =
+            (widget.price * double.parse(details['quantity']))
+                .toString();
+        setState(() {
+          selected = !selected;
+        });
+        if (selected) {
+          widget.addItem(widget.packageName, details);
+        } else {
+          widget.removeItem(widget.packageName);
+        }
+      },
+      splashColor: Colors.transparent,
+      child: Container(
+        padding: EdgeInsets.all(10),
+        width: (widget.width - 40) / 2 - 10,
+        decoration: BoxDecoration(
+            color: Theme.of(context).buttonColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 60,
+              alignment: Alignment.center,
+              child: Image.asset(
+                'assets/gas_cylinder3.jpg',
+              ),
             ),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          Text(
-            widget.packageName,
-            style: Theme.of(context)
-                .textTheme
-                .bodyText2
-                .copyWith(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-          SizedBox(
-            height: 5,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.packageSize,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyText2
-                    .copyWith(fontSize: 16, fontWeight: FontWeight.w300),
-              ),
-              SizedBox(width: 5),
-              Text('x'),
-              SizedBox(width: 8),
-              Container(
-                height: 20,
-                width: 20,
-                color: Colors.white,
-                child: TextField(
-                  controller: _controller,
-                  decoration: null,
-                  keyboardType: TextInputType.number,
-                  maxLength: 2,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (val) {
-                    if (val.trim().isNotEmpty) details['quantity'] = val;
-                    if (val.trim().isEmpty || int.parse(val.trim()) == 0)
-                      details['quantity'] = '1';
-                    if (val.trim().length == 2)
-                      FocusScope.of(context).focusedChild.unfocus();
-                    details['amount'] =
-                        (widget.price * double.parse(details['quantity']))
-                            .toString();
-                    if (selected) {
-                      widget.removeItem(widget.packageName);
-                      widget.addItem(widget.packageName, details);
-                    }
-                  },
+            SizedBox(
+              height: 15,
+            ),
+            Text(
+              widget.packageName,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyText2
+                  .copyWith(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            SizedBox(
+              height: 5,
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  widget.packageSize,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyText2
+                      .copyWith(fontSize: 16, fontWeight: FontWeight.w300),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 5,
-          ),
-          Row(
-            children: [
-              RichText(
-                  text: TextSpan(
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyText2
-                          .copyWith(fontSize: 14),
-                      children: [
-                    TextSpan(text: '# ', style: TextStyle(fontSize: 12)),
-                    TextSpan(
-                      text:
-                          '${formatCurrency.format(widget.price * double.parse(details['quantity'])).toString().substring(1)}',
-                    ),
-                  ])),
-              Spacer(),
-              InkWell(
-                onTap: () {
-                  details['quantity'] = _controller.text;
-                  details['amount'] =
-                      (widget.price * double.parse(details['quantity']))
-                          .toString();
-                  setState(() {
-                    selected = !selected;
-                  });
-                  if (selected) {
-                    widget.addItem(widget.packageName, details);
-                  } else {
-                    widget.removeItem(widget.packageName);
-                  }
-                },
-                splashColor: Colors.transparent,
-                child: Container(
+                SizedBox(width: 5),
+                Text('x'),
+                SizedBox(width: 8),
+                Container(
+                  height: 25,
+                  width: 25,
+                  color: Colors.white,
+                  child: TextField(
+                    controller: _controller,
+                    decoration: null,
+                    keyboardType: TextInputType.number,
+                    maxLength: 2,
+                    style: TextStyle(height: 1.5),
+                    textAlign: TextAlign.center,
+                    textAlignVertical: TextAlignVertical.center,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onChanged: (val) {
+                      if (val.trim().isNotEmpty) details['quantity'] = val;
+                      if (val.trim().isEmpty || int.parse(val.trim()) == 0)
+                        details['quantity'] = '1';
+                      if (val.trim().length == 2)
+                        FocusScope.of(context).focusedChild.unfocus();
+                      details['amount'] =
+                          (widget.price * double.parse(details['quantity']))
+                              .toString();
+                      if (selected) {
+                        widget.removeItem(widget.packageName);
+                        widget.addItem(widget.packageName, details);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 5,
+            ),
+            Row(
+              children: [
+                RichText(
+                    text: TextSpan(
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyText2
+                            .copyWith(fontSize: 14),
+                        children: [
+                      TextSpan(text: '\u{20A6} ', style: TextStyle(fontSize: 12)),
+                      TextSpan(
+                        text:
+                            '${formatCurrency.format(widget.price * double.parse(details['quantity'])).toString().substring(1)}',
+                      ),
+                    ])),
+                Spacer(),
+                Container(
                   width: 30,
                   height: 30,
                   decoration: BoxDecoration(
@@ -429,10 +467,10 @@ class _GasPackagesState extends State<GasPackages> {
                   child:
                       selected ? Icon(Icons.check, color: Colors.blue) : null,
                 ),
-              ),
-            ],
-          )
-        ],
+              ],
+            )
+          ],
+        ),
       ),
     );
   }

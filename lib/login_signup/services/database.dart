@@ -35,21 +35,28 @@ class DatabaseService {
       Map order,
       String name,
       Map location,
-      String number, String transactionID}) async {
+      String number, String transactionID, String paymentMethod, String total, String deliveryCharge}) async {
     await users.child('orders').child('personalOrders').child(uid).push().set({
       'reference': reference,
       'created': timestamp,
-      'status': 'pending',
+      'status': 'Pending',
       'order': order,
-      'transactionID': transactionID
+      'deliveryCharge': deliveryCharge,
+      'total': total,
+      'location': location,
+      'transactionID': transactionID,
+      'paymentMethod': paymentMethod
     });
     return await users.child('orders').child('pendingOrders').push().set({
       'name': name,
       'created': timestamp,
       'order': order,
       'location': location,
+      'total': total,
       'number': number,
-      'transactionID': transactionID
+      'transactionID': transactionID,
+      'paymentMethod': paymentMethod
+
     });
   }
 }
