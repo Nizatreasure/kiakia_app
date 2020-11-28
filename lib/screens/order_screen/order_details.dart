@@ -18,7 +18,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class OrderDetails extends StatefulWidget {
   final Map details, location;
-  OrderDetails(this.details, this.location);
+  final String scheduledDate;
+  OrderDetails({this.details, this.location, this.scheduledDate});
   @override
   _OrderDetailsState createState() => _OrderDetailsState();
 }
@@ -196,6 +197,7 @@ class _OrderDetailsState extends State<OrderDetails> {
               deliveryCharge: deliveryCharge.toString(),
               total: total.toString(),
               paymentMethod: paymentMethod,
+              schedule: widget.scheduledDate,
               transactionID: MinId.getId('4{w}2{d}3{w}2{d}1{w}'));
       saveAddressToDevice(
           address: widget.location['address'],
@@ -452,8 +454,26 @@ class _OrderDetailsState extends State<OrderDetails> {
             ),
           ),
           SizedBox(height: 20),
+          if (widget.scheduledDate != null && widget.scheduledDate.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.fromLTRB(30, 0, 30, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Schedule Refill Date',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .copyWith(fontSize: 20, fontWeight: FontWeight.w600),
+                  ),
+                  SizedBox(height: 10),
+                  Text(widget.scheduledDate),
+                ],
+              ),
+            ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(30, 0, 30, 10),
+            padding: const EdgeInsets.fromLTRB(30, 20, 30, 10),
             child: Text(
               'Payment',
               style: Theme.of(context)
@@ -604,7 +624,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                     barrierDismissible: false,
                     builder: (context) {
                       return StatefulBuilder(
-                        builder: (context, setState){
+                        builder: (context, setState) {
                           return AlertDialog(
                             content: RichText(
                               text: TextSpan(
@@ -612,73 +632,91 @@ class _OrderDetailsState extends State<OrderDetails> {
                                       .textTheme
                                       .bodyText2
                                       .copyWith(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500),
                                   children: [
                                     TextSpan(text: 'Pay   '),
                                     TextSpan(
-                                        text: '${formatCurrency.format(total)}  ',
-                                        style:
-                                        TextStyle(fontWeight: FontWeight.w900)),
+                                        text:
+                                            '${formatCurrency.format(total)}  ',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w900)),
                                     TextSpan(text: 'cash on delivery?')
                                   ]),
                             ),
                             actions: [
                               FlatButton(
-                                  onPressed: disableButton ? null : () {
-                                    Navigator.pop(context);
-                                  },
+                                  onPressed: disableButton
+                                      ? null
+                                      : () {
+                                          Navigator.pop(context);
+                                        },
                                   child: Text('NO')),
                               FlatButton(
-                                  onPressed: disableButton ? null : () async {
-                                    setState((){ disableButton = true;});
-                                    try {
-                                      final response =
-                                      await get('https://www.google.com');
-                                      if (response.statusCode == 200) {
-                                        DatabaseService(
-                                            timestamp: DateTime.now()
-                                                .millisecondsSinceEpoch
-                                                .toString(),
-                                            uid: FirebaseAuth
-                                                .instance.currentUser.uid)
-                                            .createNewGasOrder(
-                                            number: number,
-                                            name: name,
-                                            order: widget.details,
-                                            location: widget.location,
-                                            deliveryCharge:
-                                            deliveryCharge.toString(),
-                                            total: total.toString(),
-                                            paymentMethod: 'Cash',
-                                            transactionID: MinId.getId(
-                                                '4{w}2{d}3{w}2{d}1{w}'))
-                                            .then((value) async {
-                                          await saveAddressToDevice(
-                                              address: widget.location['address'],
-                                              lat: widget.location['lat'],
-                                              lng: widget.location['lng']);
-                                          showPaymentStatusReport('success');
-                                        });
-                                      }
-                                    } catch (e) {
-                                      Navigator.pop(context);
-                                      _scaffoldKey.currentState.showSnackBar(
-                                        SnackBar(
-                                          backgroundColor: Colors.red[900],
-                                          content: Text(
-                                            'An error occurred. Try again',
-                                            style: TextStyle(fontSize: 18),
-                                          ),
-                                          duration: Duration(seconds: 3),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: disableButton ? SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator()) : Text('YES')),
+                                  onPressed: disableButton
+                                      ? null
+                                      : () async {
+                                          setState(() {
+                                            disableButton = true;
+                                          });
+                                          try {
+                                            final response = await get(
+                                                'https://www.google.com');
+                                            if (response.statusCode == 200) {
+                                              DatabaseService(
+                                                      timestamp: DateTime.now()
+                                                          .millisecondsSinceEpoch
+                                                          .toString(),
+                                                      uid: FirebaseAuth.instance
+                                                          .currentUser.uid)
+                                                  .createNewGasOrder(
+                                                      number: number,
+                                                      name: name,
+                                                      order: widget.details,
+                                                      location: widget.location,
+                                                      deliveryCharge:
+                                                          deliveryCharge
+                                                              .toString(),
+                                                      total: total.toString(),
+                                                      paymentMethod: 'Cash',
+                                                      schedule:
+                                                          widget.scheduledDate,
+                                                      transactionID: MinId.getId(
+                                                          '4{w}2{d}3{w}2{d}1{w}'))
+                                                  .then((value) async {
+                                                await saveAddressToDevice(
+                                                    address: widget
+                                                        .location['address'],
+                                                    lat: widget.location['lat'],
+                                                    lng:
+                                                        widget.location['lng']);
+                                                showPaymentStatusReport(
+                                                    'success');
+                                              });
+                                            }
+                                          } catch (e) {
+                                            Navigator.pop(context);
+                                            _scaffoldKey.currentState
+                                                .showSnackBar(
+                                              SnackBar(
+                                                backgroundColor:
+                                                    Colors.red[900],
+                                                content: Text(
+                                                  'An error occurred. Try again',
+                                                  style:
+                                                      TextStyle(fontSize: 18),
+                                                ),
+                                                duration: Duration(seconds: 3),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                  child: disableButton
+                                      ? SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator())
+                                      : Text('YES')),
                             ],
                           );
                         },

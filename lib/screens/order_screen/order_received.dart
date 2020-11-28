@@ -12,6 +12,16 @@ class OrderReceived extends StatelessWidget {
           automaticallyImplyLeading: false,
           centerTitle: true,
           elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.keyboard_arrow_left,
+              color: Colors.black,
+              size: 30,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
         ),
         backgroundColor: Color(0xffffffff),
         body: LayoutBuilder(

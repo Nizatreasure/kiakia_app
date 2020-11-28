@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:http/http.dart';
 import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/login_signup/services/database.dart';
@@ -45,7 +46,7 @@ class AuthenticationService {
   }
 
   //constructs the dialog box where users can enter their otp to be verified
-  Future<void> showOtpDialog(BuildContext myContext, verId, number, id) async {
+  Future<void> showOtpDialog(BuildContext myContext, verId, number) async {
     String smsCode, otpError = '';
     bool showLoaderAndError = false, showLoader = false;
     TextEditingController _controller = TextEditingController();
@@ -128,16 +129,13 @@ class AuthenticationService {
                             children: [
                               FlatButton(
                                   onPressed: () {
-                                    if (id == 1)
-                                      Navigator.pop(context);
-                                    else {
+
                                       Navigator.pop(context);
                                       changeUserNumber(
                                           myContext, 'Enter New Number');
-                                    }
                                   },
                                   child: Text(
-                                    id == 1 ? 'Cancel' : 'Change Number',
+                                    'Change Number',
                                     style: TextStyle(
                                         fontSize: 14, color: Colors.blue),
                                   )),
@@ -159,11 +157,6 @@ class AuthenticationService {
                                           //links the number entered by the user to their current email. it displays an error message if the operation was not successful
                                           try {
                                             otpError = '';
-                                            if (id == 1) {
-                                              await _auth.signInWithCredential(
-                                                  credential);
-                                              Navigator.pop(context);
-                                            } else {
                                               await _auth.currentUser
                                                   .linkWithCredential(
                                                       credential);
@@ -175,7 +168,6 @@ class AuthenticationService {
                                                 'isNumberVerified': true
                                               });
                                               Navigator.pop(context);
-                                            }
                                           } on FirebaseAuthException catch (e) {
                                             setState(() {
                                               showLoader = false;
@@ -261,54 +253,51 @@ class AuthenticationService {
 
   //the function responsible for initiating the process of  number verification when the user clicks on the 'verify now' button on the pop up
   //an id of 1 logs in users while other ids would link the user credentials
-  Future verifyNumber({number, BuildContext myContext, int id}) async {
-    int _resendToken;
-    try {
-      await _auth.verifyPhoneNumber(
-          phoneNumber: number,
-          forceResendingToken: _resendToken,
-          verificationCompleted: (phoneAuthCredentials) async {
-            if (id == 1) {
-              await _auth.signInWithCredential(phoneAuthCredentials);
-              Navigator.pop(myContext);
-            } else {
-              await _auth.currentUser.linkWithCredential(phoneAuthCredentials);
-              await FirebaseDatabase.instance
-                  .reference()
-                  .child('users')
-                  .child(_auth.currentUser.uid)
-                  .update({'isNumberVerified': true});
-              Navigator.pop(myContext);
-            }
-          },
-          verificationFailed: (FirebaseAuthException e) {
-            if (e.code == 'too-many-requests') {
-              error = 'Too many attempts, try again later';
-            } else if (e.code == 'network-request-failed') {
-              error = 'Network request failed, try again later';
-            } else {
-              error = 'Request failed, try again later';
-            }
-            return null;
-          },
-          codeSent: (verId, int resendToken) async {
-            if (id != 1) Navigator.pop(myContext);
-            _resendToken = resendToken;
-            showOtpDialog(myContext, verId, number, id);
-          },
-          timeout: Duration(seconds: 30),
-          codeAutoRetrievalTimeout: (verificationID) {});
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'network-request-failed') {
-        error = 'Network request failed';
-      } else {
-        error = 'Unknown Error';
-      }
-      return null;
-    } catch (e) {
-      error = 'An error occurred';
-      return null;
-    }
+  Future verifyNumber({number, BuildContext myContext}) async {
+
+     int _resendToken;
+     try {
+       await _auth.verifyPhoneNumber(
+           phoneNumber: number,
+           forceResendingToken: _resendToken,
+           verificationCompleted: (phoneAuthCredentials) async {
+
+               await _auth.currentUser.linkWithCredential(phoneAuthCredentials);
+               await FirebaseDatabase.instance
+                   .reference()
+                   .child('users')
+                   .child(_auth.currentUser.uid)
+                   .update({'isNumberVerified': true});
+               Navigator.pop(myContext);
+             },
+           verificationFailed: (FirebaseAuthException e) {
+             if (e.code == 'too-many-requests') {
+               error = 'Too many attempts, try again later';
+             } else if (e.code == 'network-request-failed') {
+               error = 'Network request failed, try again later';
+             } else {
+               error = 'Request failed, try again later';
+             }
+             return null;
+           },
+           codeSent: (verId, int resendToken) async {
+             _resendToken = resendToken;
+             showOtpDialog(myContext, verId, number);
+           },
+           timeout: Duration(seconds: 30),
+           codeAutoRetrievalTimeout: (verificationID) {});
+     } on FirebaseAuthException catch (e) {
+       if (e.code == 'network-request-failed') {
+         error = 'Network request failed';
+       } else {
+         error = 'Unknown Error';
+       }
+       return null;
+     } catch (e) {
+       error = 'An error occurred';
+       return null;
+     }
+
   }
 
   //signs the user out of the application

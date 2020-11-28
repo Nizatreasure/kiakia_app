@@ -13,6 +13,15 @@ import 'package:kiakia/screens/drawer.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
+//formats the user's name by removing extra spaces
+String formatUserName(String name) {
+  List nameList = [];
+  for (int i = 0; i < name.split(' ').length; i++) {
+    if (name.split(' ')[i] != '') nameList.add(name.split(' ')[i]);
+  }
+  return nameList.join(' ');
+}
+
 class Dashboard extends StatefulWidget {
   @override
   _DashboardState createState() => _DashboardState();
@@ -25,13 +34,9 @@ class _DashboardState extends State<Dashboard> {
   String photoURL;
   Map snap;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  List<String> _navigationBarTitle = [
-    'Dashboard',
-    'Order',
-    'Profile'
-  ];
-  StreamSubscription<Event> userDataStream;
-
+  List<String> _navigationBarTitle = ['Dashboard', 'Order', 'Profile'];
+  StreamSubscription<Event> userDataStream, gasLevelStream;
+  double value; //the amount of gas left in the cylinder of the user
 
   //saves user information to their local storage
   _saveUserDataToStorage({name, email, number, status, provider}) async {
@@ -45,17 +50,18 @@ class _DashboardState extends State<Dashboard> {
     storage.setItem('userData', userData);
   }
 
+
   //gets the user information from the database, listens for changes in the data and stores it locally
   _getUserInformation() async {
     final uid = FirebaseAuth.instance.currentUser.uid;
     final DatabaseReference database = FirebaseDatabase.instance.reference();
     userDataStream =
         database.child('users').child(uid).onValue.listen((event) async {
-          snap = event.snapshot.value;
+      snap = event.snapshot.value;
       if (snap != null && snap.isNotEmpty) {
         photoURL = snap['pictureURL'];
         _saveUserDataToStorage(
-          name: snap['name'],
+          name: formatUserName(snap['name']),
           email: snap['email'],
           number: snap['number'],
           status: snap['isNumberVerified'],
@@ -96,10 +102,29 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
+  //gets the current level of gas in the user's cylinder from the database
+  _getGasLevel() async {
+
+    final uid = FirebaseAuth.instance.currentUser.uid;
+    final DatabaseReference database = FirebaseDatabase.instance.reference();
+    gasLevelStream = database
+        .child('gas_monitor')
+        .child(uid)
+        .child('gas_level')
+        .onValue
+        .listen((event) {
+      setState(() {
+        var snap = event.snapshot.value;
+        value = double.parse(snap.toString());
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _getUserInformation();
+    _getGasLevel();
     _firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
       print('onMessage: $message');
@@ -118,6 +143,7 @@ class _DashboardState extends State<Dashboard> {
   void dispose() {
     super.dispose();
     if (userDataStream != null) userDataStream.cancel();
+    if (gasLevelStream != null) gasLevelStream.cancel();
   }
 
   @override
@@ -126,7 +152,7 @@ class _DashboardState extends State<Dashboard> {
         Provider.of<ChangeButtonNavigationBarIndex>(context).currentIndex;
     List<Widget> _bottomNavigationBarItemBody = [
       Home(showNumberNotVerified, registerUserNumber),
-      Order(),
+      Order(value),
       Profile(photoURL, snap),
     ];
 

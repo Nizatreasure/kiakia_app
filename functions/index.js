@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 require('dotenv').config();
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
+const bucket = admin.storage().bucket();
 
         const accountSid = process.env.TWILIO_ACCOUNT_SID;
         const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -57,7 +58,7 @@ exports.notifyUser = functions.database.ref('/gas_monitor/{id}/gas_level')
             const payload = {
                 notification: {
                     title: +value.toString() > 10 ? `Low gas level for ${name}!` : +value.toString() > 5 ? `Very low gas level for ${name}!` : `Critical gas level for ${name}!`,
-                    body: `You have only ${Math.round(+value.toString())}% of gas remaining. Schedule refill now!.`
+                    body: `You have only ${Math.round(+value.toString())}% of gas remaining. Schedule refill now!`
                 },
                 data: {
                     'click_action': 'FLUTTER_NOTIFICATION_CLICK'
@@ -68,7 +69,7 @@ exports.notifyUser = functions.database.ref('/gas_monitor/{id}/gas_level')
 //                  .create({
 //                     from: 'MG5b51a5028c87ab989bf7491a9cec4fee',
 //                     to: '+2349082377152',
-//                     body: `Dear ${name}, you have ${value}% of your gas left. Schedule refill now`
+//                     body: `Dear ${name}, you have ${value}% of your gas left. Schedule refill now!`
 //                   }).then(messages => console.log(messages.sid)).done();
         }
     }
@@ -79,5 +80,7 @@ exports.notifyUser = functions.database.ref('/gas_monitor/{id}/gas_level')
 //deletes the database for a user when the user has been deleted
 exports.deleteUser = functions.auth.user().onDelete(async (user) => {
     await admin.database().ref(`/users/${user.uid}`).remove();
+    await admin.database().ref(`/orders/personalOrders/${user.uid}`).remove();
     await admin.database().ref(`/gas_monitor/${user.uid}`).remove();
+    await admin.storage().bucket().file(`pictures/${user.uid}`).delete();
 });

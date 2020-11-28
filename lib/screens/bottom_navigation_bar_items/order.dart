@@ -1,16 +1,18 @@
 import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/screens/order_screen/address_suggestion.dart';
 import 'package:kiakia/screens/order_screen/order_details.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:uuid/uuid.dart';
 
 class Order extends StatefulWidget {
+  final double value;
+  Order(this.value);
   @override
   _OrderState createState() => _OrderState();
 }
@@ -18,17 +20,20 @@ class Order extends StatefulWidget {
 class _OrderState extends State<Order> {
   Map<String, Map> packageDetails = {};
   TextEditingController _controller = new TextEditingController();
+  TextEditingController _controller2 = new TextEditingController();
   Map location = {};
   static final String key = 'AIzaSyDuc6Wz_ssKWEiNA4xJyUzT812LZgxnVUc';
   final storage = new LocalStorage('user_data.json');
-  bool isVerified = false, showLoader = false;
-  String number;
+  bool isVerified = false, showLoader = false, scheduled;
+  String number, scheduledDate;
 
   //gets the location of the user if any has been saved
   getLocationFromStorage() async {
     await storage.ready;
     Map storedLocation = await storage.getItem('location');
-    if (storedLocation != null && storedLocation.isNotEmpty && _controller.text.isEmpty) {
+    if (storedLocation != null &&
+        storedLocation.isNotEmpty &&
+        _controller.text.isEmpty) {
       location = storedLocation;
       _controller.text = location['address'];
     }
@@ -46,7 +51,8 @@ class _OrderState extends State<Order> {
   addItemsToMap(String key, dynamic value) {
     packageDetails.putIfAbsent(key, () => value);
   }
-
+  //makes a http request to get the lat and lng coordinates of the
+  // location selected by the user using the unique placeid assigned by google
   Future convertPlaceIdToLatLng(data, String sessionToken) async {
     Map locationLatLng = {};
     try {
@@ -67,7 +73,11 @@ class _OrderState extends State<Order> {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => OrderDetails(packageDetails, location)));
+                builder: (context) => OrderDetails(
+                      details: packageDetails,
+                      location: location,
+                      scheduledDate: scheduledDate,
+                    )));
         setState(() {
           showLoader = false;
         });
@@ -81,12 +91,15 @@ class _OrderState extends State<Order> {
   void initState() {
     super.initState();
     _controller.addListener(() {});
+    _controller2.addListener(() {});
     getLocationFromStorage();
+    scheduled = widget.value != null && widget.value > 20 ? false :  true;
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _controller2.dispose();
     super.dispose();
   }
 
@@ -215,6 +228,55 @@ class _OrderState extends State<Order> {
               ],
             ),
           ),
+          SizedBox(height: 15),
+          SwitchListTile(
+            value: scheduled,
+            onChanged: (val) {
+              setState(() {
+                scheduled = val;
+              });
+            },
+            contentPadding: EdgeInsets.all(0),
+            title: Text('Schedule Refill',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          if (scheduled)
+            TextFormField(
+              readOnly: true,
+              controller: _controller2,
+              onTap: () async {
+                var result = await showDatePicker(
+                    context: context,
+                    firstDate: DateTime.now().add(Duration(days: 1)),
+                    lastDate: DateTime(2100),
+                    initialDate: DateTime.now().add(Duration(days: 1)),
+                    cancelText: 'Cancel',
+                    confirmText: 'Ok',
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          inputDecorationTheme: InputDecorationTheme(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            hintStyle: TextStyle(color: Colors.black),
+                            labelStyle: TextStyle(color: Colors.black),
+                          ),
+                        ),
+                        child: SingleChildScrollView(
+                          child: child,
+                        ),
+                      );
+                    });
+                if (result != null) {
+                  _controller2.text = DateFormat.yMMMMd().format(result);
+                  scheduledDate = DateFormat.yMMMMd().format(result).toString();
+                }
+              },
+              decoration: decoration.copyWith(hintText: 'Select delivery date'),
+            ),
           SizedBox(height: 25),
           FlatButton(
             height: 45,
@@ -262,6 +324,18 @@ class _OrderState extends State<Order> {
                     duration: Duration(seconds: 2),
                   ),
                 );
+              } else if (scheduled &&
+                  (scheduledDate == null || scheduledDate.isEmpty)) {
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Colors.red[900],
+                    content: Text(
+                      'Please input schedule refill date',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
               } else if ((_controller.text != null &&
                       _controller.text.trim().isNotEmpty) &&
                   (location['lat'] == null || location['lat'] == '')) {
@@ -286,8 +360,11 @@ class _OrderState extends State<Order> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            OrderDetails(packageDetails, location)));
+                        builder: (context) => OrderDetails(
+                              details: packageDetails,
+                              location: location,
+                              scheduledDate: scheduledDate,
+                            )));
                 setState(() {
                   showLoader = false;
                 });
@@ -355,8 +432,7 @@ class _GasPackagesState extends State<GasPackages> {
       onTap: () {
         details['quantity'] = _controller.text;
         details['amount'] =
-            (widget.price * double.parse(details['quantity']))
-                .toString();
+            (widget.price * double.parse(details['quantity'])).toString();
         setState(() {
           selected = !selected;
         });
@@ -452,7 +528,8 @@ class _GasPackagesState extends State<GasPackages> {
                             .bodyText2
                             .copyWith(fontSize: 14),
                         children: [
-                      TextSpan(text: '\u{20A6} ', style: TextStyle(fontSize: 12)),
+                      TextSpan(
+                          text: '\u{20A6} ', style: TextStyle(fontSize: 12)),
                       TextSpan(
                         text:
                             '${formatCurrency.format(widget.price * double.parse(details['quantity'])).toString().substring(1)}',

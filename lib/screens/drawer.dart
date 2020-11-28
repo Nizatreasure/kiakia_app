@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
+import 'package:kiakia/screens/about.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/transaction_history.dart';
 import 'package:localstorage/localstorage.dart';
@@ -71,28 +72,41 @@ class _MyDrawerState extends State<MyDrawer> {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundColor: widget.photoURL == null || widget.photoURL == '' ? Colors.white : Color.fromRGBO(77, 172, 246, 1),
+                        backgroundColor:
+                            widget.photoURL == null || widget.photoURL == ''
+                                ? Colors.white
+                                : Color.fromRGBO(77, 172, 246, 1),
                         child: widget.photoURL == null || widget.photoURL == ''
                             ? Center(
-                                child: Text(
-                                  '${initials[0].toUpperCase()}${initials[1].toUpperCase()}',
-                                  style: TextStyle(
-                                    fontSize: 50,
-                                    fontWeight: FontWeight.w400,
-                                  ),
+                                child: RichText(
+                                  text: TextSpan(
+                                      style: TextStyle(
+                                          fontSize: 50,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black),
+                                      children: [
+                                        TextSpan(
+                                            text:
+                                                '${initials[0].toUpperCase()}'),
+                                        if (initials.length > 1)
+                                          TextSpan(
+                                              text:
+                                                  '${initials[1].toUpperCase()}')
+                                      ]),
                                 ),
                               )
                             : ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
+                                borderRadius: BorderRadius.circular(50),
                                 child: CachedNetworkImage(
                                   imageUrl: widget.photoURL,
-                                  placeholder: (context, url) =>
+                                  placeholder: (context, url) => CircleAvatar(
+                                      radius: 50,
+                                      backgroundColor: Colors.white,
+                                      child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) =>
                                       CircleAvatar(
                                           radius: 50,
-                                          backgroundColor: Colors.white,
-                                          child: CircularProgressIndicator()),
-                                  errorWidget: (context, url, error) =>
-                                      Icon(Icons.person),
+                                          child: Icon(Icons.person, size: 55,)),
                                 ),
                               ),
                       ),
@@ -205,6 +219,10 @@ class _MyDrawerState extends State<MyDrawer> {
           ),
           SizedBox(height: 30),
           InkWell(
+            onTap: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => About()));
+            },
             child: Container(
               padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
               child: Row(

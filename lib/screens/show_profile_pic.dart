@@ -22,13 +22,14 @@ class _ShowProfilePicState extends State<ShowProfilePic> {
         backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
+          icon: Icon(
+            Icons.keyboard_arrow_left,
+            color: Colors.white,
+            size: 30,
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
         ),
       ),
       body: Center(

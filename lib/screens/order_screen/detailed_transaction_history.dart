@@ -38,7 +38,6 @@ class _DetailedTransactionHistoryState
     });
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -58,25 +57,63 @@ class _DetailedTransactionHistoryState
         title: Text('Order Details'),
         centerTitle: true,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.keyboard_arrow_left,
+            color: Colors.black,
+            size: 30,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.only(top: 10),
         child: ListView(
           children: [
-            Align(
-              alignment: Alignment(0.9, 0),
-              child: RichText(text: TextSpan(
-                style: Theme.of(context).textTheme.bodyText2.copyWith(fontSize: 14),
-                children: [
-                  TextSpan(
-                    text: 'Status: '
-                  ),
-                  TextSpan(
-                    text: widget.general['status'].toString(), style: TextStyle(color: Color.fromRGBO(255,142,27,1))
-                  ),
-                ]
-              ),),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Align(
+                alignment: Alignment(-1, 0),
+                child: RichText(
+                  text: TextSpan(
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .copyWith(fontSize: 14),
+                      children: [
+                        TextSpan(
+                            text: 'Status: ',
+                            style: TextStyle(fontWeight: FontWeight.w700)),
+                        TextSpan(
+                            text: widget.general['status'].toString(),
+                            style: TextStyle(
+                                color: Color.fromRGBO(255, 142, 27, 1))),
+                      ]),
+                ),
+              ),
             ),
+            if (widget.general['reference'] != null &&
+                widget.general['reference'] != '')
+              Padding(
+                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                child: RichText(
+                  text: TextSpan(
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .copyWith(fontSize: 14),
+                      children: [
+                        TextSpan(
+                            text: 'Reference: ',
+                            style: TextStyle(fontWeight: FontWeight.w700)),
+                        TextSpan(
+                            text: widget.general['reference'].toString(),
+                            style: TextStyle(fontWeight: FontWeight.w500)),
+                      ]),
+                ),
+              ),
             SizedBox(height: 10),
             ListView.builder(
               shrinkWrap: true,
@@ -321,9 +358,45 @@ class _DetailedTransactionHistoryState
                 ),
               ),
             ),
-            SizedBox(height: 30),
+            if (widget.general['schedule'] != null &&
+                widget.general['schedule'] != '')
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(30, 10, 15, 10),
+                    child: Text(
+                      'Scheduled Date',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .copyWith(fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 30),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(
+                            color: Color.fromRGBO(57, 138, 239, 0.05),
+                            width: 3)),
+                    padding: EdgeInsets.fromLTRB(15, 7, 10, 7),
+                    child: Text(
+                      widget.general['schedule'],
+                      style: TextStyle(
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyText2
+                            .color
+                            .withOpacity(0.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 50),
+              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
               child: FlatButton(
                 onPressed: riderLocation == null
                     ? null
@@ -331,7 +404,12 @@ class _DetailedTransactionHistoryState
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => TrackRider(rider: riderLocation, userLocation: widget.general['location'], transactionID: widget.general['transactionID'],)));
+                                builder: (context) => TrackRider(
+                                      rider: riderLocation,
+                                      userLocation: widget.general['location'],
+                                      transactionID:
+                                          widget.general['transactionID'],
+                                    )));
                       },
                 color: Theme.of(context).buttonColor,
                 disabledColor: Theme.of(context).buttonColor.withOpacity(0.25),

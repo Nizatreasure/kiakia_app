@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kiakia/screens/order_screen/detailed_transaction_history.dart';
@@ -65,6 +64,16 @@ class _TransactionHistoryState extends State<TransactionHistory> {
           title: Text('Transaction History'),
           centerTitle: true,
           elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.keyboard_arrow_left,
+              color: Colors.black,
+              size: 30,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
         ),
         body: userPurchaseHistory == null
             ? Center(

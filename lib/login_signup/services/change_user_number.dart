@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
 import 'package:kiakia/login_signup/decoration2.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
@@ -107,7 +108,15 @@ Future<void> changeUserNumber(BuildContext myContext, String text) async {
                           : Text(''),
                       Row(
                         children: [
-                          FlatButton(onPressed: () {Navigator.pop(context);}, child: Text('Cancel', style: TextStyle(color: Colors.blue, fontSize: 16),)),
+                          FlatButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text(
+                                'Cancel',
+                                style:
+                                    TextStyle(color: Colors.blue, fontSize: 16),
+                              )),
                           Spacer(),
                           FlatButton(
                               textColor: Colors.blue,
@@ -204,10 +213,28 @@ Future<void> numberNotVerifiedPopup(
             ),
             FlatButton(
               onPressed: () async {
-                await AuthenticationService().verifyNumber(
-                    number: number,
-                    myContext:
-                        myContext); // calls the function that starts the number verification process
+                try {
+                  final response = await get('https://www.google.com');
+                  if (response.statusCode == 200) {
+                    await AuthenticationService()
+                        .verifyNumber(number: number, myContext: myContext);
+                  }
+                } catch (e) {
+                  Navigator.pop(context);
+                  showDialog(
+                      context: myContext,
+                      child: AlertDialog(
+                        content: Text(
+                            'Failed to verify number. You can retry verification from your profile page'),
+                        actions: [
+                          FlatButton(
+                              onPressed: () {
+                                Navigator.pop(myContext);
+                              },
+                              child: Text('OK'))
+                        ],
+                      ));
+                } // calls the function that starts the number verification process
               },
               child: Text('Verify Now'),
             ),

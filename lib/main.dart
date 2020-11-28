@@ -68,13 +68,14 @@ class _MyAppState extends State<MyApp> {
     if (!_initialized) {
       return Container(
           color: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 90),
           child: Center(
             child: Image.asset('assets/gas_logo.jpg'),
           ));
     }
 
-    // if (FirebaseAuth.instance.currentUser != null)
-    //   FirebaseAuth.instance.signOut();
+    if (FirebaseAuth.instance.currentUser != null)
+      FirebaseAuth.instance.signOut();
     //returns the application when flutterFire has been successfully initialized
     return MultiProvider(
       providers: [
@@ -145,6 +146,7 @@ class _WrapperState extends State<Wrapper> {
       playSound: true,
       enableLights: true,
       enableVibration: true,
+
     );
     await flutterNotifications
         .resolvePlatformSpecificImplementation<
@@ -186,11 +188,13 @@ class _WrapperState extends State<Wrapper> {
       else if (userData.isEmpty) {
         return Container(
           color: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 90),
           child: Center(
             child: Image.asset('assets/gas_logo.jpg'),
           ),
         );
-      } else
+      }
+      else
         return Authenticate(
           id: 1,
           data: userData,
@@ -201,8 +205,9 @@ class _WrapperState extends State<Wrapper> {
     } else {
       return Container(
         color: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 90),
         child: Center(
-          child: Image.asset('assets/gas_logo.jpg'),
+          child: Image.asset('assets/gas_logo.jpg', ),
         ),
       );
     }

@@ -193,17 +193,6 @@ class _TrackRiderState extends State<TrackRider>
       key: _scaffoldKey,
       backgroundColor: Colors.white30,
       appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.menu,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              _scaffoldKey.currentState.openEndDrawer();
-            },
-          )
-        ],
         backgroundColor: Color(0xffffffff),
         leading: IconButton(
           icon: Icon(
@@ -216,14 +205,13 @@ class _TrackRiderState extends State<TrackRider>
           },
         ),
         title: Text(
-          'Order Details',
+          'Track Rider',
           style: TextStyle(
               color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
         ),
         centerTitle: true,
         elevation: 0,
       ),
-      endDrawer: Drawer(),
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -274,8 +262,7 @@ class _TrackRiderState extends State<TrackRider>
                           alignment: Alignment.centerLeft,
                           child: AutoSizeText(
                             originAddress,
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 18),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             maxLines: 5,
                           ),
                         ),
@@ -284,7 +271,8 @@ class _TrackRiderState extends State<TrackRider>
                         contentPadding: EdgeInsets.only(left: 20, right: 10),
                         leading: CircleAvatar(
                           radius: 25,
-                          backgroundImage: NetworkImage(widget.rider['pictureURL']),
+                          backgroundImage:
+                              NetworkImage(widget.rider['pictureURL']),
                         ),
                         onTap: () {
                           launchURL('tel: ${widget.rider['number']}');
