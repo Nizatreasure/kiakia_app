@@ -185,9 +185,9 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                     TextSpan(
                                         text: width > 560
                                             ? 'Welcome back '
-                                            : 'Welcome back\n'),
+                                            : 'Welcome back ',),
                                     TextSpan(
-                                        text: widget.data['name'],
+                                        text: widget.data['name'].toString().split(' ')[0],
                                         style: TextStyle(
                                             fontSize: 32,
                                             color: Color.fromRGBO(
@@ -440,7 +440,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                               child: Align(
                                 alignment: Alignment.center,
                                 child: Text(
-                                  'No, I am not ${widget.data['name']}',
+                                  'No, I am not ${widget.data['name'].toString().split(' ')[0]}',
                                   style: TextStyle(
                                       color: Colors.blue,
                                       fontSize: 18,

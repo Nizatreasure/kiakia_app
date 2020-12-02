@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:kiakia/app_theme.dart';
 import 'package:kiakia/login_signup/authenticate.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
@@ -13,7 +14,7 @@ import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(Phoenix(child: MyApp()));
 }
 
 class MyApp extends StatefulWidget {
@@ -192,6 +193,11 @@ class _WrapperState extends State<Wrapper> {
           child: Center(
             child: Image.asset('assets/gas_logo.jpg'),
           ),
+        );
+      }
+      else if (userData['val'] == 'deleted') {
+        return Authenticate(
+          id: 2,
         );
       }
       else

@@ -22,11 +22,11 @@ class DatabaseService {
 
   //creates a document for saving the user gas level and device
   // token which would be used to send push notifications
-  Future createGasMonitor() async {
+  Future createGasMonitor(String token) async {
     return await users
         .child('gas_monitor')
         .child(uid)
-        .set({'token': '', 'gas_level': 0.0});
+        .set({'token': token, 'gas_level': 0.0});
   }
 
   //updates the database when a user makes a gas purchase
@@ -41,7 +41,6 @@ class DatabaseService {
       'created': timestamp,
       'status': 'Pending',
       'order': order,
-      'deliveryCharge': deliveryCharge,
       'total': total,
       'location': location,
       'transactionID': transactionID,

@@ -63,7 +63,7 @@ class OrderReceived extends StatelessWidget {
                                   ),
                                   TextSpan(
                                       text:
-                                          'A Rider is yet to pick your order. You can monitor and track your order from your dashboard. Thank you for choosing us',
+                                          'You can monitor and track your delivery on your dashboard. Thank you for choosing us',
                                       style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w400))

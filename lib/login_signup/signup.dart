@@ -66,6 +66,15 @@ class _SignUpState extends State<SignUp> {
     }
   }
 
+  //formats the user's name by removing extra spaces
+  String formatUserName(String name) {
+    List nameList = [];
+    for (int i = 0; i < name.split(' ').length; i++) {
+      if (name.split(' ')[i] != '') nameList.add(name.split(' ')[i]);
+    }
+    return nameList.join(' ');
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -248,7 +257,7 @@ class _SignUpState extends State<SignUp> {
                             password: password,
                             number: '+234' + number.substring(1, 11),
                             email: email,
-                            name: name,
+                            name: formatUserName(name),
                             isNumberVerified: false);
                         if (mounted) {
                           setState(() {

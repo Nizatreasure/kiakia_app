@@ -33,15 +33,6 @@ class _MyDrawerState extends State<MyDrawer> {
     }
   }
 
-  void launchWhatsApp(
-      {@required String number, @required String message}) async {
-    String url = "whatsapp://send?phone=$number&text=${Uri.parse(message)}";
-
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {}
-  }
-
   @override
   void initState() {
     _getUserDataFromStorage();
@@ -106,7 +97,10 @@ class _MyDrawerState extends State<MyDrawer> {
                                   errorWidget: (context, url, error) =>
                                       CircleAvatar(
                                           radius: 50,
-                                          child: Icon(Icons.person, size: 55,)),
+                                          child: Icon(
+                                            Icons.person,
+                                            size: 55,
+                                          )),
                                 ),
                               ),
                       ),
@@ -152,6 +146,7 @@ class _MyDrawerState extends State<MyDrawer> {
           ),
           SizedBox(height: 30),
           InkWell(
+            splashColor: Colors.transparent,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -189,6 +184,7 @@ class _MyDrawerState extends State<MyDrawer> {
           ),
           SizedBox(height: 30),
           InkWell(
+            splashColor: Colors.transparent,
             child: Container(
               padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
               child: Row(
@@ -219,6 +215,7 @@ class _MyDrawerState extends State<MyDrawer> {
           ),
           SizedBox(height: 30),
           InkWell(
+            splashColor: Colors.transparent,
             onTap: () {
               Navigator.push(
                   context, MaterialPageRoute(builder: (context) => About()));
@@ -253,9 +250,10 @@ class _MyDrawerState extends State<MyDrawer> {
           ),
           SizedBox(height: 30),
           InkWell(
+            splashColor: Colors.transparent,
             onTap: () {
-              launchWhatsApp(
-                  number: "+2349082377152", message: "My name is Niza");
+              Navigator.pop(context);
+              contactUs(context);
             },
             child: Container(
               padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
@@ -287,11 +285,10 @@ class _MyDrawerState extends State<MyDrawer> {
           ),
           SizedBox(height: 30),
           InkWell(
-            onTap: () async {
-              await AuthenticationService().logOut();
-              Provider.of<ChangeButtonNavigationBarIndex>(context,
-                      listen: false)
-                  .updateCurrentIndex(0);
+            splashColor: Colors.transparent,
+            onTap: () {
+              Navigator.pop(context);
+              showLogOutConfirmation();
             },
             child: Container(
               padding: EdgeInsets.fromLTRB(30, 10, 5, 10),
@@ -328,4 +325,154 @@ class _MyDrawerState extends State<MyDrawer> {
       ),
     );
   }
+
+  void showLogOutConfirmation() {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        child: Builder(builder: (context) {
+          return AlertDialog(
+            content: Text('Sure you want to log out?', style: TextStyle(fontSize: 18.5, fontWeight: FontWeight.w500),),
+            actions: [
+              FlatButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('NO', style: TextStyle(fontSize: 22),),
+              ),
+              FlatButton(
+                onPressed: () async {
+                  Provider.of<ChangeButtonNavigationBarIndex>(context,
+                          listen: false)
+                      .updateCurrentIndex(0);
+                  Provider.of<ChangeButtonNavigationBarIndex>(context,
+                          listen: false)
+                      .updatePrices({});
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(seconds: 1));
+                  await AuthenticationService().logOut();
+                },
+                child: Text('YES', style: TextStyle(fontSize: 22),),
+              ),
+            ],
+          );
+        }));
+  }
+}
+
+Future contactUs(context) async {
+  void launchWhatsApp(
+      {@required String number,
+      @required String message,
+      @required BuildContext myContext}) async {
+    String url = "whatsapp://send?phone=$number&text=${Uri.parse(message)}";
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      showErrorDialog(
+          'Could not launch WhatsApp or WhatsApp isn\'t installed', myContext);
+    }
+  }
+
+  void launchPhoneCall(url, BuildContext myContext) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      showErrorDialog('Could not launch app', myContext);
+    }
+  }
+
+  String tel = '+234814000550';
+  showDialog(
+    context: context,
+    child: Builder(builder: (context) {
+      return Dialog(
+        child: Container(
+          height: 100,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  launchPhoneCall('tel: $tel', context);
+                },
+                splashColor: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.call,
+                      color: Colors.blue,
+                      size: 32,
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Call',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1),
+                    )
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  launchWhatsApp(
+                      number: tel,
+                      message: 'This is a test message',
+                      myContext: context);
+                },
+                splashColor: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.chat,
+                      color: Colors.blue,
+                      size: 32,
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Chat',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }),
+  );
+}
+
+Future showErrorDialog(String message, BuildContext context) async {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    child: Builder(builder: (context) {
+      return AlertDialog(
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('OK'),
+          )
+        ],
+      );
+    }),
+  );
 }

@@ -4,6 +4,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/home.dart';
@@ -13,14 +16,7 @@ import 'package:kiakia/screens/drawer.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
-//formats the user's name by removing extra spaces
-String formatUserName(String name) {
-  List nameList = [];
-  for (int i = 0; i < name.split(' ').length; i++) {
-    if (name.split(' ')[i] != '') nameList.add(name.split(' ')[i]);
-  }
-  return nameList.join(' ');
-}
+
 
 class Dashboard extends StatefulWidget {
   @override
@@ -35,7 +31,7 @@ class _DashboardState extends State<Dashboard> {
   Map snap;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   List<String> _navigationBarTitle = ['Dashboard', 'Order', 'Profile'];
-  StreamSubscription<Event> userDataStream, gasLevelStream;
+  StreamSubscription<Event> userDataStream, gasLevelStream, userDeleteSubscription;
   double value; //the amount of gas left in the cylinder of the user
 
   //saves user information to their local storage
@@ -61,7 +57,7 @@ class _DashboardState extends State<Dashboard> {
       if (snap != null && snap.isNotEmpty) {
         photoURL = snap['pictureURL'];
         _saveUserDataToStorage(
-          name: formatUserName(snap['name']),
+          name: snap['name'],
           email: snap['email'],
           number: snap['number'],
           status: snap['isNumberVerified'],
@@ -69,7 +65,6 @@ class _DashboardState extends State<Dashboard> {
         );
       }
       if (mounted) {
-        _saveDeviceToken();
         setState(() {});
       }
     });
@@ -88,18 +83,19 @@ class _DashboardState extends State<Dashboard> {
         'Phone number not linked with this account. Please enter your number');
   }
 
-  //saves the unique device token to firebase
-  _saveDeviceToken() async {
+
+  //checks if a user has been deleted
+  _checkIfDeleted() async {
     String id = FirebaseAuth.instance.currentUser.uid;
-    String token = await FirebaseMessaging().getToken();
-    await Future.delayed(Duration(seconds: 10));
-    if (token != null) {
-      await FirebaseDatabase.instance
-          .reference()
-          .child('gas_monitor')
-          .child(id)
-          .update({'token': token});
-    }
+    final DatabaseReference database = FirebaseDatabase.instance.reference();
+    userDeleteSubscription = database.child('users').onChildRemoved.listen((event) async {
+      if (id == event.snapshot.key) {
+        await storage.setItem('userData', {'val': 'deleted'});
+        Phoenix.rebirth(context);
+        await GoogleSignIn().signOut();
+        await FacebookLogin().logOut();
+      }
+    });
   }
 
   //gets the current level of gas in the user's cylinder from the database
@@ -115,7 +111,8 @@ class _DashboardState extends State<Dashboard> {
         .listen((event) {
       setState(() {
         var snap = event.snapshot.value;
-        value = double.parse(snap.toString());
+       if (snap != null)
+         value = double.parse(snap.toString());
       });
     });
   }
@@ -124,6 +121,7 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     _getUserInformation();
+    _checkIfDeleted();
     _getGasLevel();
     _firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
@@ -141,9 +139,10 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   void dispose() {
-    super.dispose();
     if (userDataStream != null) userDataStream.cancel();
     if (gasLevelStream != null) gasLevelStream.cancel();
+    if (userDeleteSubscription != null) userDeleteSubscription.cancel();
+    super.dispose();
   }
 
   @override

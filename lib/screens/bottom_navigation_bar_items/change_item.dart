@@ -16,4 +16,11 @@ class ChangeButtonNavigationBarIndex extends ChangeNotifier {
     this.showProfilePicChangeLoader = showProfilePicChangeLoader;
     notifyListeners();
   }
+
+  //stores the prices of the cylinders
+  Map prices = {};
+  void updatePrices(Map prices) {
+    this.prices = prices;
+    notifyListeners();
+  }
 }

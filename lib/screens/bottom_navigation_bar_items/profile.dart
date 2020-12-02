@@ -5,6 +5,7 @@ import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
 import 'package:kiakia/login_signup/decoration2.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
@@ -12,7 +13,6 @@ import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/order.dart';
 import 'package:kiakia/screens/cloud_storage.dart';
-import 'package:kiakia/screens/dashboard.dart';
 import 'package:kiakia/screens/order_screen/address_suggestion.dart';
 import 'package:kiakia/screens/show_profile_pic.dart';
 import 'package:localstorage/localstorage.dart';
@@ -85,7 +85,7 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     bool showLoader = Provider.of<ChangeButtonNavigationBarIndex>(context)
         .showProfilePicChangeLoader;
-    name = formatUserName(widget.details['name']);
+    name = widget.details['name'];
     number = widget.details['number'];
     verificationStatus =
         widget.details['isNumberVerified'] ? '' : 'not verified';
@@ -263,46 +263,48 @@ class _ProfileState extends State<Profile> {
                                                 Text('0' + number.substring(4)),
                                                 SizedBox(width: 5),
                                                 if (verificationStatus != '')
-                                                  FlatButton(
-                                                      splashColor:
-                                                          Colors.transparent,
-                                                      onPressed: () async {
-                                                        try {
-                                                          final response =
-                                                              await get(
-                                                                  'https://www.google.com');
-                                                          if (response
-                                                                  .statusCode ==
-                                                              200) {
-                                                            await AuthenticationService()
-                                                                .verifyNumber(
-                                                                    number:
-                                                                        number,
-                                                                    myContext:
-                                                                        context);
+                                                  Expanded(
+                                                    child: FlatButton(
+                                                        splashColor:
+                                                            Colors.transparent,
+                                                        onPressed: () async {
+                                                          try {
+                                                            final response =
+                                                                await get(
+                                                                    'https://www.google.com');
+                                                            if (response
+                                                                    .statusCode ==
+                                                                200) {
+                                                              await AuthenticationService()
+                                                                  .verifyNumber(
+                                                                      number:
+                                                                          number,
+                                                                      myContext:
+                                                                          context);
+                                                            }
+                                                          } catch (e) {
+                                                            _scaffoldKey
+                                                                .currentState
+                                                                .showSnackBar(
+                                                                    SnackBar(
+                                                              backgroundColor:
+                                                                  Colors.red[900],
+                                                              content: Text(
+                                                                'Failed to verify number',
+                                                                style: TextStyle(
+                                                                    fontSize: 18),
+                                                              ),
+                                                              duration: Duration(
+                                                                  seconds: 2),
+                                                            ));
                                                           }
-                                                        } catch (e) {
-                                                          _scaffoldKey
-                                                              .currentState
-                                                              .showSnackBar(
-                                                                  SnackBar(
-                                                            backgroundColor:
-                                                                Colors.red[900],
-                                                            content: Text(
-                                                              'Failed to verify number',
-                                                              style: TextStyle(
-                                                                  fontSize: 18),
-                                                            ),
-                                                            duration: Duration(
-                                                                seconds: 2),
-                                                          ));
-                                                        }
-                                                      },
-                                                      child: Text(
-                                                        '(Click to verify)',
-                                                        style: TextStyle(
-                                                            color: Colors.blue),
-                                                      ))
+                                                        },
+                                                        child: Text(
+                                                          '(click to verify number)',
+                                                          style: TextStyle(
+                                                              color: Colors.blue),
+                                                        )),
+                                                  )
                                               ],
                                             ),
                                           )
@@ -415,6 +417,7 @@ Future<void> changeUserPassword(
   bool _hidePassword = true;
   final _changePasswordFormKey = GlobalKey<FormState>();
   bool showError = false, showLoader = false;
+  final secureStorage = new FlutterSecureStorage();
   return showDialog<void>(
       context: myContext,
       barrierDismissible: false,
@@ -528,6 +531,7 @@ Future<void> changeUserPassword(
                                               .instance.currentUser
                                               .updatePassword(password);
                                           Navigator.pop(context);
+                                          await secureStorage.write(key: 'password', value: password);
                                           key.currentState.showSnackBar(
                                             SnackBar(
                                               content: Text(

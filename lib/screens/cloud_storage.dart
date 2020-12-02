@@ -66,6 +66,7 @@ class CloudStorageService {
         }
       }
     } on FirebaseException catch (e) {
+      print(e);
       Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false)
           .updateShowProfilePicChangeLoader(false);
       key.currentState.showSnackBar(

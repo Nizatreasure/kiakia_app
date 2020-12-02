@@ -39,7 +39,6 @@ class _OrderDetailsState extends State<OrderDetails> {
   String googleApiKey = 'AIzaSyDuc6Wz_ssKWEiNA4xJyUzT812LZgxnVUc';
   GoogleMapController _mapController;
   double orderTotal = 0;
-  double deliveryCharge = 1000;
   double total = 0;
 
   //responsible for launching the phone call app from within this app
@@ -56,7 +55,7 @@ class _OrderDetailsState extends State<OrderDetails> {
     widget.details.forEach((key, value) {
       orderTotal = orderTotal + double.parse(value['amount']);
     });
-    total = orderTotal + deliveryCharge;
+    total = orderTotal;
   }
 
   //gets the user details from local storage
@@ -194,7 +193,6 @@ class _OrderDetailsState extends State<OrderDetails> {
               name: name,
               order: widget.details,
               location: widget.location,
-              deliveryCharge: deliveryCharge.toString(),
               total: total.toString(),
               paymentMethod: paymentMethod,
               schedule: widget.scheduledDate,
@@ -325,60 +323,6 @@ class _OrderDetailsState extends State<OrderDetails> {
             }).toList(),
           ),
           SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(30, 0, 15, 10),
-            child: Row(
-              children: [
-                Text(
-                  'Order',
-                  style: TextStyle(
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyText2
-                          .color
-                          .withOpacity(0.5),
-                      fontSize: 17),
-                ),
-                Spacer(),
-                Text(
-                  formatCurrency.format(orderTotal),
-                  style: TextStyle(
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyText2
-                          .color
-                          .withOpacity(0.5)),
-                )
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(30, 0, 15, 20),
-            child: Row(
-              children: [
-                Text(
-                  'Delivery Charge',
-                  style: TextStyle(
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyText2
-                          .color
-                          .withOpacity(0.5),
-                      fontSize: 17),
-                ),
-                Spacer(),
-                Text(
-                  formatCurrency.format(deliveryCharge),
-                  style: TextStyle(
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyText2
-                          .color
-                          .withOpacity(0.5)),
-                )
-              ],
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(30, 0, 15, 20),
             child: Row(
@@ -674,9 +618,6 @@ class _OrderDetailsState extends State<OrderDetails> {
                                                       name: name,
                                                       order: widget.details,
                                                       location: widget.location,
-                                                      deliveryCharge:
-                                                          deliveryCharge
-                                                              .toString(),
                                                       total: total.toString(),
                                                       paymentMethod: 'Cash',
                                                       schedule:

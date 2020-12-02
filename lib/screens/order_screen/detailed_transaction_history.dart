@@ -187,63 +187,6 @@ class _DetailedTransactionHistoryState
             ),
             SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.fromLTRB(30, 0, 15, 10),
-              child: Row(
-                children: [
-                  Text(
-                    'Order',
-                    style: TextStyle(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyText2
-                            .color
-                            .withOpacity(0.5),
-                        fontSize: 17),
-                  ),
-                  Spacer(),
-                  Text(
-                    formatCurrency.format(
-                        double.parse(widget.general['total']) -
-                            double.parse(widget.general['deliveryCharge'])),
-                    style: TextStyle(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyText2
-                            .color
-                            .withOpacity(0.5)),
-                  )
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(30, 0, 15, 20),
-              child: Row(
-                children: [
-                  Text(
-                    'Delivery Charge',
-                    style: TextStyle(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyText2
-                            .color
-                            .withOpacity(0.5),
-                        fontSize: 17),
-                  ),
-                  Spacer(),
-                  Text(
-                    formatCurrency
-                        .format(double.parse(widget.general['deliveryCharge'])),
-                    style: TextStyle(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyText2
-                            .color
-                            .withOpacity(0.5)),
-                  )
-                ],
-              ),
-            ),
-            Padding(
               padding: const EdgeInsets.fromLTRB(30, 0, 15, 20),
               child: Row(
                 children: [

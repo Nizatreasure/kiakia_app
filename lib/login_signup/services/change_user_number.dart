@@ -181,9 +181,6 @@ Future<void> updateUserNumberDetails(
       .child('users')
       .child(uid)
       .update({'number': '+234' + number.substring(1, 11)});
-
-  //shows  the number not verified popup and asks the user to verify their number
-  numberNotVerifiedPopup('+234' + number.substring(1, 11), myContext);
 }
 
 //creates a dialog box that notifies the user whose phone number has not been verified to verify it

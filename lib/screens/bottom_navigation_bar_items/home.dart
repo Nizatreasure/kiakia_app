@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/order_screen/detailed_transaction_history.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
@@ -31,6 +32,7 @@ class _HomeState extends State<Home> {
   List userPurchaseHistory = [];
   List orderDetails = [];
   List orderPackages = [];
+  String name;
   final formatCurrency =
       new NumberFormat.currency(locale: 'en_US', symbol: '\u{20A6}');
 
@@ -49,6 +51,7 @@ class _HomeState extends State<Home> {
     });
   }
 
+
   //gets the purchase history of the user from the database
   _getRecentActivities() {
     var thisData = database.child('orders').child('personalOrders').child(uid);
@@ -60,7 +63,7 @@ class _HomeState extends State<Home> {
         thisData.orderByChild('created').onChildAdded.forEach((element) {
           int currentDateTime = DateTime.now().millisecondsSinceEpoch;
           if (currentDateTime - int.parse(element.snapshot.value['created']) <
-              432000000) {
+              259200000) {
             userPurchaseHistory.add(element.snapshot.value);
             orderDetails.add(element.snapshot.value['order'].values.toList());
             orderPackages.add(element.snapshot.value['order'].keys.toList());
@@ -79,6 +82,7 @@ class _HomeState extends State<Home> {
         .child('users')
         .child(uid)
         .once();
+    name = snapshot.value['name'].toString().split(' ')[0];
     if (snapshot.value['number'] == '') {
       widget.addNumber();
     }
@@ -107,16 +111,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext myContext) {
     double width = MediaQuery.of(myContext).size.width;
-    Color color = Colors.blue;
-    if (value != null) {
-      color = value >= 70
-          ? Colors.green[700]
-          : value >= 40
-              ? Colors.yellow[700]
-              : value >= 21
-                  ? Colors.orange[700]
-                  : Colors.red[700];
-    }
+    Color color = Colors.blue[900];
     return userPurchaseHistory != null && userPurchaseHistory.isNotEmpty
         ? smallCylinder()
         : LayoutBuilder(
@@ -137,7 +132,7 @@ class _HomeState extends State<Home> {
                               margin: EdgeInsets.fromLTRB(60, 80, 60, 60),
                               alignment: Alignment.bottomCenter,
                               width: width,
-                              constraints: BoxConstraints(minHeight: 250),
+                              constraints: BoxConstraints(minHeight: 350),
                               child: Stack(
                                 overflow: Overflow.visible,
                                 alignment: Alignment.center,
@@ -153,28 +148,30 @@ class _HomeState extends State<Home> {
                                       width: width * 0.5,
                                       child: CustomPaint(
                                         painter: CylinderTop(
-                                          color: color,
-                                        ),
+                                            color: color,
+                                            value: width > 500 ? 1.23 : 1.1),
                                       ),
                                     ),
                                   ),
 
                                   Positioned(
                                     bottom: width > 500
-                                        ? -500 * 0.04
-                                        : -width * 0.06,
+                                        ? -500 * 0.03
+                                        : -width * 0.04,
                                     child: Container(
-                                      width: width * 0.4,
+                                      width: width > 500
+                                          ? 500 * 0.45
+                                          : width * 0.4,
                                       height: width > 500
-                                          ? 500 * 0.04
+                                          ? 500 * 0.03
                                           : width * 0.06,
                                       decoration: BoxDecoration(
                                           border: BorderDirectional(
                                         bottom:
-                                            BorderSide(color: color, width: 4),
-                                        end: BorderSide(color: color, width: 4),
+                                            BorderSide(color: color, width: 6),
+                                        end: BorderSide(color: color, width: 6),
                                         start:
-                                            BorderSide(color: color, width: 4),
+                                            BorderSide(color: color, width: 6),
                                       )),
                                     ),
                                   ),
@@ -184,8 +181,8 @@ class _HomeState extends State<Home> {
                                     child: Center(
                                       child: LiquidLinearProgressIndicator(
                                         direction: Axis.vertical,
-                                        borderRadius: 30,
-                                        borderWidth: 4,
+                                        borderRadius: 90,
+                                        borderWidth: 6,
                                         value: value == null ? 0 : value / 100,
                                         backgroundColor: Colors.transparent,
                                         center: Text(
@@ -218,7 +215,7 @@ class _HomeState extends State<Home> {
                               ),
                             ),
                           ),
-                          if (value != null)
+                          if (value != null && name != null && name.isNotEmpty)
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 20),
@@ -233,7 +230,7 @@ class _HomeState extends State<Home> {
                                             : Colors.red),
                                     children: [
                                       TextSpan(
-                                          text: 'Dear Customer, you have '),
+                                          text: 'Dear $name, you have '),
                                       TextSpan(
                                           text: '${value.toInt()}%',
                                           style: TextStyle(fontSize: 24)),
@@ -259,7 +256,7 @@ class _HomeState extends State<Home> {
                                   height: 50,
                                   color: Theme.of(context).buttonColor,
                                   child: Text(
-                                    'Quick Order',
+                                    'Schedule Refill',
                                     style: Theme.of(context).textTheme.button,
                                   ),
                                 ),
@@ -275,22 +272,13 @@ class _HomeState extends State<Home> {
           );
   }
 
-  //the display when there is a recent activity
+  //the gas cylinder display when there is a recent activity
   Widget smallCylinder() {
-    Color color = Colors.blue;
-    if (value != null) {
-      color = value >= 70
-          ? Colors.green[700]
-          : value >= 40
-              ? Colors.yellow[700]
-              : value >= 21
-                  ? Colors.orange[700]
-                  : Colors.red[700];
-    }
+    Color color = Colors.blue[900];
     return ListView(
       children: [
         Container(
-          height: 200,
+          height: 250,
           margin: EdgeInsets.fromLTRB(60, 50, 60, 30),
           alignment: Alignment.bottomCenter,
           child: Stack(
@@ -298,40 +286,39 @@ class _HomeState extends State<Home> {
             alignment: Alignment.center,
             children: [
               Positioned(
-                top: -30,
+                top: -25,
                 child: Container(
-                  height: 30,
+                  height: 25,
                   width: 150,
                   child: CustomPaint(
-                    painter: CylinderTop(
-                      color: color,
-                    ),
+                    painter: CylinderTop(color: color, value: 1.3),
                   ),
                 ),
               ),
 
               Positioned(
-                bottom: -10,
+                bottom: -8,
                 child: Container(
-                  width: 120,
-                  height: 10,
+                  width: 100,
+                  height: 12,
                   decoration: BoxDecoration(
+                      color: Colors.blue[900],
                       border: BorderDirectional(
-                    bottom: BorderSide(color: color, width: 4),
-                    end: BorderSide(color: color, width: 4),
-                    start: BorderSide(color: color, width: 4),
-                  )),
+                        bottom: BorderSide(color: color, width: 8),
+                        end: BorderSide(color: color, width: 8),
+                        start: BorderSide(color: color, width: 8),
+                      )),
                 ),
               ),
 
               //this container specifies the height for displaying the gauge
               Container(
-                width: 180,
+                width: 190,
                 child: Center(
                   child: LiquidLinearProgressIndicator(
                     direction: Axis.vertical,
-                    borderRadius: 30,
-                    borderWidth: 4,
+                    borderRadius: 60,
+                    borderWidth: 6,
                     value: value == null ? 0 : value / 100,
                     backgroundColor: Colors.transparent,
                     center: Text(
@@ -356,7 +343,7 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
-        if (value != null)
+        if (value != null && name != null && name.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: RichText(
@@ -367,7 +354,7 @@ class _HomeState extends State<Home> {
                       fontWeight: FontWeight.w500,
                       color: value > 20 ? Colors.black : Colors.red),
                   children: [
-                    TextSpan(text: 'Dear Customer, you have '),
+                    TextSpan(text: 'Dear $name, you have '),
                     TextSpan(
                         text: '${value.toInt()}%',
                         style: TextStyle(fontSize: 24)),
@@ -392,7 +379,7 @@ class _HomeState extends State<Home> {
                 height: 50,
                 color: Theme.of(context).buttonColor,
                 child: Text(
-                  'Quick Order',
+                  'Schedule Refill',
                   style: Theme.of(context).textTheme.button,
                 ),
               ),
@@ -521,13 +508,14 @@ class _HomeState extends State<Home> {
 
 class CylinderTop extends CustomPainter {
   final Color color;
-  CylinderTop({this.color});
+  final double value;
+  CylinderTop({@required this.color, @required this.value});
 
   @override
   void paint(Canvas canvas, Size size) {
     var paint = Paint()
       ..color = color
-      ..strokeWidth = 4
+      ..strokeWidth = 6
       ..style = PaintingStyle.stroke;
 
     var path = Path();
@@ -544,9 +532,9 @@ class CylinderTop extends CustomPainter {
     path.quadraticBezierTo(
         size.width * 0.5, size.height * 0, size.width * 0.2, size.height * 0.2);
     path.moveTo(size.width * 0.13, size.height * 0.34);
-    path.lineTo(size.width * 0.13, size.height);
+    path.lineTo(size.width * 0.13, size.height * value);
     path.moveTo(size.width * 0.87, size.height * 0.34);
-    path.lineTo(size.width * 0.87, size.height);
+    path.lineTo(size.width * 0.87, size.height * value);
     path.moveTo(size.width * 0.35, size.height * 0.7);
     path.quadraticBezierTo(size.width * 0.5, size.height * 0.6,
         size.width * 0.65, size.height * 0.7);

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -17,6 +18,7 @@ Future facebookLogin(context) async {
   switch (result.status) {
     case FacebookLoginStatus.loggedIn:
 
+      String firebaseMessagingToken = await FirebaseMessaging().getToken();
       //get the user token when log in is successful
       final String token = result.accessToken.token;
 
@@ -43,8 +45,15 @@ Future facebookLogin(context) async {
               url: profile['picture']['data']['url'],
               isNumberVerified: false,
               provider: 'facebook');
-          await DatabaseService(uid: user.user.uid).createGasMonitor();
+          await DatabaseService(uid: user.user.uid).createGasMonitor(firebaseMessagingToken);
           await _auth.currentUser.updateProfile(displayName: profile['name']);
+        }
+        else {
+          await FirebaseDatabase.instance
+              .reference()
+              .child('gas_monitor')
+              .child(user.user.uid)
+              .update({'token': token});
         }
       } catch (e) {
         if (e.code == 'account-exists-with-different-credential')
@@ -73,6 +82,7 @@ Future googleSignIn(context) async {
   final _auth = FirebaseAuth.instance;
   final _database = FirebaseDatabase.instance.reference();
   dynamic userExists;
+  String firebaseMessagingToken = await FirebaseMessaging().getToken();
   GoogleSignIn _google = GoogleSignIn(
     scopes: ['email'],
   );
@@ -98,12 +108,17 @@ Future googleSignIn(context) async {
           isNumberVerified: false,
           provider: 'google');
 
-      await  DatabaseService(uid: user.user.uid).createGasMonitor();
+      await  DatabaseService(uid: user.user.uid).createGasMonitor(firebaseMessagingToken);
     } else
       await _database
           .child('users')
           .child(user.user.uid)
           .update({'provider': 'google'});
+    await FirebaseDatabase.instance
+        .reference()
+        .child('gas_monitor')
+        .child(user.user.uid)
+        .update({'token': firebaseMessagingToken});
   } catch (e) {}
 }
 

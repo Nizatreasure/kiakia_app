@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:http/http.dart';
 import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/login_signup/services/database.dart';
@@ -19,7 +19,13 @@ class AuthenticationService {
     try {
       UserCredential result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
+      String token = await FirebaseMessaging().getToken();
       User user = result.user;
+      await FirebaseDatabase.instance
+          .reference()
+          .child('gas_monitor')
+          .child(user.uid)
+          .update({'token': token});
       await secureStorage.write(key: 'password', value: password);
       return user;
     } on FirebaseAuthException catch (e) {
@@ -218,6 +224,7 @@ class AuthenticationService {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       User user = result.user;
+      String token = await FirebaseMessaging().getToken();
 
       //creates a database document for the user based on their firebase id
       await DatabaseService(uid: user.uid).createUser(
@@ -226,7 +233,7 @@ class AuthenticationService {
           email: email,
           isNumberVerified: isNumberVerified,
           provider: 'email');
-      await  DatabaseService(uid: user.uid).createGasMonitor();
+      await  DatabaseService(uid: user.uid).createGasMonitor(token);
       await secureStorage.write(key: 'password', value: password);
 
       //updates the firebase display name of the user to the name inputted
