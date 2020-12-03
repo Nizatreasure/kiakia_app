@@ -392,6 +392,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                     onTap: () async {
                                       await googleSignIn(context);
                                     },
+                                    splashColor: Colors.transparent,
                                     child: Container(
                                       height: 60,
                                       child: Row(
@@ -412,6 +413,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                   onTap: () async {
                                     await facebookLogin(context);
                                   },
+                                  splashColor: Colors.transparent,
                                   child: Container(
                                     height: 60,
                                     child: Row(

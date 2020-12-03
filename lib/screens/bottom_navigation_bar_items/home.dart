@@ -32,25 +32,24 @@ class _HomeState extends State<Home> {
   List userPurchaseHistory = [];
   List orderDetails = [];
   List orderPackages = [];
-  String name;
+  String name, lastUpdated, lastRefill;
   final formatCurrency =
       new NumberFormat.currency(locale: 'en_US', symbol: '\u{20A6}');
 
   //gets the current level of gas in the user's cylinder from the database
   _getGasLevel() async {
-    gasLevelStream = database
-        .child('gas_monitor')
-        .child(uid)
-        .child('gas_level')
-        .onValue
-        .listen((event) {
+    gasLevelStream =
+        database.child('gas_monitor').child(uid).onValue.listen((event) {
       setState(() {
         var snap = event.snapshot.value;
-        value = double.parse(snap.toString());
+        value = double.parse(snap['gas_level'].toString());
+        if (snap['lastUpdated'] != null)
+          lastUpdated = snap['lastUpdated'].toString();
+        if (snap['lastRefill'] != null)
+          lastRefill = snap['lastRefill'].toString();
       });
     });
   }
-
 
   //gets the purchase history of the user from the database
   _getRecentActivities() {
@@ -126,6 +125,18 @@ class _HomeState extends State<Home> {
                     child: IntrinsicHeight(
                       child: Column(
                         children: [
+                          if (lastRefill != null && lastRefill.isNotEmpty)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Last Refill: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(int.parse(lastUpdated)))}',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w900),
+                                  )),
+                            ),
                           Expanded(
                             flex: 10,
                             child: Container(
@@ -229,8 +240,7 @@ class _HomeState extends State<Home> {
                                             ? Colors.black
                                             : Colors.red),
                                     children: [
-                                      TextSpan(
-                                          text: 'Dear $name, you have '),
+                                      TextSpan(text: 'Dear $name, you have '),
                                       TextSpan(
                                           text: '${value.toInt()}%',
                                           style: TextStyle(fontSize: 24)),
@@ -238,12 +248,20 @@ class _HomeState extends State<Home> {
                                     ]),
                               ),
                             ),
+                          if (lastUpdated != null && lastUpdated.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(30, 15, 20, 0),
+                              child: Text(
+                                'Last Updated at ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(int.parse(lastUpdated)))}   ${DateFormat.jms().format(DateTime.fromMillisecondsSinceEpoch(int.parse(lastUpdated)))}',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ),
                           SizedBox(
                             height: 20,
                           ),
                           if (value != null && value <= 20)
                             Padding(
-                              padding: EdgeInsets.fromLTRB(30, 0, 30, 34),
+                              padding: EdgeInsets.fromLTRB(30, 0, 30, 10),
                               child: InkWell(
                                 onTap: () {
                                   Provider.of<ChangeButtonNavigationBarIndex>(
@@ -277,6 +295,16 @@ class _HomeState extends State<Home> {
     Color color = Colors.blue[900];
     return ListView(
       children: [
+        if (lastRefill != null && lastRefill.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Last Refill: ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(int.parse(lastUpdated)))}',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                )),
+          ),
         Container(
           height: 250,
           margin: EdgeInsets.fromLTRB(60, 50, 60, 30),
@@ -360,6 +388,17 @@ class _HomeState extends State<Home> {
                         style: TextStyle(fontSize: 24)),
                     TextSpan(text: ' of your gas remaining')
                   ]),
+            ),
+          ),
+        if (lastUpdated != null && lastUpdated.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(30, 15, 20, 0),
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                'Last Updated at ${DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(int.parse(lastUpdated)))}   ${DateFormat.jms().format(DateTime.fromMillisecondsSinceEpoch(int.parse(lastUpdated)))}',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
           ),
         SizedBox(

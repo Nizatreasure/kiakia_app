@@ -12,14 +12,21 @@ Future<bool> _numberNotUsedByAnotherClient(String num) async {
   List userNumbers = new List();
   DataSnapshot snapshot =
       await FirebaseDatabase.instance.reference().child('users').once();
+  DataSnapshot snapshot2 =
+      await FirebaseDatabase.instance.reference().child('riders').once();
   if (snapshot != null) {
     Map data = snapshot.value;
     data.forEach((key, value) {
       userNumbers.add(value['number']);
     });
-    return userNumbers.contains('+234' + num.substring(1, 11)) ? false : true;
-  } else
-    return true;
+  }
+  if (snapshot2 != null) {
+    Map data = snapshot2.value;
+    data.forEach((key, value) {
+      userNumbers.add(value['number']);
+    });
+  }
+  return userNumbers.contains('+234' + num.substring(1, 11)) ? false : true;
 }
 
 //creates a dialog box asking a user to enter a new number

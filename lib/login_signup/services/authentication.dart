@@ -258,8 +258,8 @@ class AuthenticationService {
     }
   }
 
-  //the function responsible for initiating the process of  number verification when the user clicks on the 'verify now' button on the pop up
-  //an id of 1 logs in users while other ids would link the user credentials
+  //the function responsible for initiating the process of  number verification
+  // when the user clicks on the 'verify now' button on the pop up
   Future verifyNumber({number, BuildContext myContext}) async {
 
      int _resendToken;
@@ -292,7 +292,7 @@ class AuthenticationService {
              showOtpDialog(myContext, verId, number);
            },
            timeout: Duration(seconds: 30),
-           codeAutoRetrievalTimeout: (verificationID) {});
+           codeAutoRetrievalTimeout: (verificationID) {}, );
      } on FirebaseAuthException catch (e) {
        if (e.code == 'network-request-failed') {
          error = 'Network request failed';

@@ -84,3 +84,16 @@ exports.deleteUser = functions.auth.user().onDelete(async (user) => {
     await admin.database().ref(`/gas_monitor/${user.uid}`).remove();
     await admin.storage().bucket().file(`pictures/${user.uid}`).delete();
 });
+
+
+//uploads the gas_level measured from the cylinder to the database
+exports.write = functions.https.onRequest(async (req, res)=> {
+    let gas_level = req.query;
+    const uid = gas_level.gas_monitor;
+    delete gas_level.gas_monitor;
+    await admin.database().ref(`gas_monitor/${uid}`).update(gas_level);
+    await admin.database().ref(`gas_monitor/${uid}`).update({'lastUpdated': Date.now()});
+    console.log('gas_level', gas_level);
+    console.log('uid', uid);
+    console.log('current date', Date.now());
+});

@@ -51,8 +51,16 @@ class _SignUpState extends State<SignUp> {
       if (response.statusCode == 200) {
         DataSnapshot snapshot =
             await FirebaseDatabase.instance.reference().child('users').once();
+        DataSnapshot snapshot2 =
+            await FirebaseDatabase.instance.reference().child('riders').once();
         if (snapshot != null) {
           Map data = snapshot.value;
+          data.forEach((key, value) {
+            userNumbers.add(value['number']);
+          });
+        }
+        if (snapshot2 != null) {
+          Map data = snapshot2.value;
           data.forEach((key, value) {
             userNumbers.add(value['number']);
           });
