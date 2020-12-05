@@ -5,6 +5,7 @@ ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
   primaryColor: Colors.white,
   buttonColor: Color.fromRGBO(57,138,239,1),
+  splashColor: Colors.transparent,
   textTheme: TextTheme(
       bodyText1: TextStyle(),
       bodyText2: TextStyle(

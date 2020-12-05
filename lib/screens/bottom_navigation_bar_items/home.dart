@@ -2,13 +2,11 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/order_screen/detailed_transaction_history.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
-import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {

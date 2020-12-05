@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kiakia/drawer/about.dart';
+import 'package:kiakia/drawer/faq.dart';
+import 'package:kiakia/drawer/transaction_history.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
-import 'package:kiakia/screens/about.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
-import 'package:kiakia/screens/transaction_history.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -184,6 +184,10 @@ class _MyDrawerState extends State<MyDrawer> {
           ),
           SizedBox(height: 30),
           InkWell(
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => FAQ()));
+            },
             splashColor: Colors.transparent,
             child: Container(
               padding: EdgeInsets.fromLTRB(30, 10, 5, 10),

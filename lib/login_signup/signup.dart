@@ -1,6 +1,5 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:flutter/services.dart'; //necessary for using inputFormatter to receive numbers only
