@@ -80,7 +80,7 @@ exports.notifyUser = functions.database.ref('/gas_monitor/{id}/gas_level')
 //deletes the database for a user when the user has been deleted
 exports.deleteUser = functions.auth.user().onDelete(async (user) => {
     await admin.database().ref(`/users/${user.uid}`).remove();
-    await admin.database().ref(`/orders/personalOrders/${user.uid}`).remove();
+    await admin.database().ref(`/orders/userOrders/${user.uid}`).remove();
     await admin.database().ref(`/gas_monitor/${user.uid}`).remove();
     await admin.storage().bucket().file(`pictures/${user.uid}`).delete();
 });

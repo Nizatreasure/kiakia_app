@@ -50,7 +50,7 @@ class _HomeState extends State<Home> {
 
   //gets the purchase history of the user from the database
   _getRecentActivities() {
-    var thisData = database.child('orders').child('personalOrders').child(uid);
+    var thisData = database.child('orders').child('userOrders').child(uid);
     userPurchaseHistoryStream = thisData.onValue.listen((event) {
       if (event != null) {
         userPurchaseHistory = [];

@@ -36,7 +36,7 @@ class DatabaseService {
       String name,
       Map location,
       String number, String transactionID, String paymentMethod, String total, String deliveryCharge, schedule}) async {
-    await users.child('orders').child('personalOrders').child(uid).push().set({
+    await users.child('orders').child('userOrders').child(uid).push().set({
       'reference': reference ?? '',
       'created': timestamp,
       'status': 'Pending',

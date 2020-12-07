@@ -24,7 +24,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
     var thisData = FirebaseDatabase.instance
         .reference()
         .child('orders')
-        .child('personalOrders')
+        .child('userOrders')
         .child(FirebaseAuth.instance.currentUser.uid);
     userPurchaseHistoryStream = thisData.onValue.listen((event) {
       if (event.snapshot.value == null)
