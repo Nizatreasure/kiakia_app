@@ -387,7 +387,7 @@ Future contactUs(context) async {
     }
   }
 
-  String tel = '+234814000550';
+  String tel = '+2348140005500';
   showDialog(
     context: context,
     child: Builder(builder: (context) {

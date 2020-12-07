@@ -1,3 +1,4 @@
+import 'package:animated_icon_button/animated_icon_button.dart';
 import 'package:flutter/material.dart';
 
 class FAQ extends StatefulWidget {
@@ -5,9 +6,35 @@ class FAQ extends StatefulWidget {
   _FAQState createState() => _FAQState();
 }
 
-class _FAQState extends State<FAQ> {
+class _FAQState extends State<FAQ> with TickerProviderStateMixin {
+  ScrollController _scrollController;
+  List<AnimationController> _animationController;
+
+  @override
+  void initState() {
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {});
+    _animationController = List.generate(
+        questions.length,
+        (index) => AnimationController(
+            vsync: this,
+            duration: Duration(milliseconds: 300),
+            reverseDuration: Duration(milliseconds: 300)));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    print(MediaQuery.of(context).size.height);
+    void playAnimation(int index) {
+      if (questions[index].expanded) {
+        for (int i = 0; i < _animationController.length; i++)
+          _animationController[i].reverse();
+        _animationController[index].forward();
+      } else
+        _animationController[index].reverse();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text("FAQ"),
@@ -25,59 +52,85 @@ class _FAQState extends State<FAQ> {
           },
         ),
       ),
-      body: ListView(
-        children: questions.map((faq) {
-          return Container(
-            decoration: BoxDecoration(
-                border: BorderDirectional(
-                    bottom: BorderSide(color: Colors.black, width: 0.3))),
-            child: Theme(
-              data: Theme.of(context)
-                  .copyWith(cardColor: Color.fromRGBO(77, 172, 246, 0.05)),
-              child: GestureDetector(
-                onTapDown: (details) {
-                  print(details.globalPosition);
+      body: ListView.builder(
+        controller: _scrollController,
+        itemCount: questions.length,
+        itemBuilder: (context, index) {
+          return Column(
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  setState(() {
+                    for (var item in questions) {
+                      if (item.question != questions[index].question)
+                        item.expanded = false;
+                    }
+                  });
+                  await Future.delayed(Duration(milliseconds: 50));
+                  setState(() {
+                    questions[index].expanded = !questions[index].expanded;
+                    playAnimation(index);
+                    if (questions[index].expanded)
+                      _scrollController.animateTo(70.0 * (index - 1),
+                          duration: Duration(milliseconds: 500),
+                          curve: Curves.easeInOutCubic);
+                  });
                 },
-                child: ExpansionPanelList(
-                  elevation: 0,
-                  expandedHeaderPadding: EdgeInsets.zero,
-                  children: [
-                    ExpansionPanel(
-                        canTapOnHeader: true,
-                        headerBuilder: (context, isExpanded) {
-                          return ListTile(
-                            contentPadding: EdgeInsets.fromLTRB(20, 7, 0, 7),
-                            title: Text(
-                              faq.question,
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                          );
-                        },
-                        body: Container(
-                          color: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 15),
-                          child: Text(
-                            faq.answer,
-                            textAlign: TextAlign.justify,
-                            style: TextStyle(height: 1.5),
-                          ),
-                        ),
-                        isExpanded: faq.expanded)
-                  ],
-                  expansionCallback: (index, isExpanded) {
-                    setState(() {
-                      for (var item in questions) {
-                        if (item.question != faq.question) item.expanded = false;
-                      }
-                      faq.expanded = !faq.expanded;
-                    });
-                  },
+                child: Container(
+                  height: 70,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      color: Color.fromRGBO(77, 172, 246, 0.05),
+                      border: BorderDirectional(
+                          bottom: BorderSide(color: Colors.grey[300]))),
+                  child: ListTile(
+                    title: Text(
+                      questions[index].question,
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    trailing: AnimatedIconButton(
+                      startIcon: Icon(Icons.keyboard_arrow_down),
+                      endIcon: Icon(Icons.keyboard_arrow_up),
+                      animationController: _animationController[index],
+                      onPressed: () async {
+                        setState(() {
+                          for (var item in questions) {
+                            if (item.question != questions[index].question)
+                              item.expanded = false;
+                          }
+                        });
+                        await Future.delayed(Duration(milliseconds: 50));
+                        setState(() {
+                          questions[index].expanded =
+                              !questions[index].expanded;
+                          playAnimation(index);
+                          if (questions[index].expanded)
+                            _scrollController.animateTo(70.0 * (index - 1),
+                                duration: Duration(milliseconds: 500),
+                                curve: Curves.easeInOutCubic);
+                        });
+                      },
+                    ),
+                  ),
                 ),
               ),
-            ),
+              Visibility(
+                visible: questions[index].expanded,
+                child: AnimatedContainer(
+                  duration: Duration(milliseconds: 300),
+                  color: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  child: Text(
+                    questions[index].answer,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(height: 1.5),
+                  ),
+                ),
+              )
+            ],
           );
-        }).toList(),
+        },
       ),
     );
   }

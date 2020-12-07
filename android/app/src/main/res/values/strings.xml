@@ -3,6 +3,6 @@
     <string name="app_name">com.mobile.kiakia</string>
     <string name="facebook_app_id">803134303817462</string>
     <string name="fb_login_protocol_scheme">fb803134303817462</string>
-    <string name="default_notification_channel_id">kiakia_notification</string>
+<!--    <string name="default_notification_channel_id">kiakia_notification</string>-->
 
 </resources>

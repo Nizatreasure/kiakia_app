@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:kiakia/app_theme.dart';
 import 'package:kiakia/login_signup/authenticate.dart';
@@ -74,8 +73,8 @@ class _MyAppState extends State<MyApp> {
           ));
     }
 
-    // if (FirebaseAuth.instance.currentUser != null)
-    //   FirebaseAuth.instance.signOut();
+    if (FirebaseAuth.instance.currentUser != null)
+      FirebaseAuth.instance.signOut();
     //returns the application when flutterFire has been successfully initialized
     return MultiProvider(
       providers: [
@@ -121,38 +120,38 @@ class Wrapper extends StatefulWidget {
 class _WrapperState extends State<Wrapper> {
   final storage = new LocalStorage('user_data.json');
   Map userData = {};
-  FlutterLocalNotificationsPlugin flutterNotifications =
-      FlutterLocalNotificationsPlugin();
-
-  Future<void> initializeLocalNotifications() async {
-    var initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
-    var initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-    await flutterNotifications.initialize(initializationSettings,
-        onSelectNotification: selectNotification);
-    await _createNotificationChannel();
-  }
-
-  Future selectNotification(String payload) async {
-    print('payload: $payload');
-  }
-
-  Future<void> _createNotificationChannel() async {
-    var androidNotificationChannel = AndroidNotificationChannel(
-      'kiakia_notification',
-      'Gas Alert',
-      'Information about gas orders, gas level and promos',
-      playSound: true,
-      enableLights: true,
-      enableVibration: true,
-
-    );
-    await flutterNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(androidNotificationChannel);
-  }
+  // FlutterLocalNotificationsPlugin flutterNotifications =
+  //     FlutterLocalNotificationsPlugin();
+  //
+  // Future<void> initializeLocalNotifications() async {
+  //   var initializationSettingsAndroid =
+  //       AndroidInitializationSettings('app_icon');
+  //   var initializationSettings =
+  //       InitializationSettings(android: initializationSettingsAndroid);
+  //   await flutterNotifications.initialize(initializationSettings,
+  //       onSelectNotification: selectNotification);
+  //   await _createNotificationChannel();
+  // }
+  //
+  // Future selectNotification(String payload) async {
+  //   print('payload: $payload');
+  // }
+  //
+  // Future<void> _createNotificationChannel() async {
+  //   var androidNotificationChannel = AndroidNotificationChannel(
+  //     'kiakia_notification',
+  //     'Gas Alert',
+  //     'Information about gas orders, gas level and promos',
+  //     playSound: true,
+  //     enableLights: true,
+  //     enableVibration: true,
+  //
+  //   );
+  //   await flutterNotifications
+  //       .resolvePlatformSpecificImplementation<
+  //           AndroidFlutterLocalNotificationsPlugin>()
+  //       ?.createNotificationChannel(androidNotificationChannel);
+  // }
 
   //query the local storage to find out if the user has stored data
   //if data is stored, the user is taken directly to the login page
@@ -171,7 +170,7 @@ class _WrapperState extends State<Wrapper> {
 
   @override
   void initState() {
-    initializeLocalNotifications();
+    // initializeLocalNotifications();
     setDatabasePersistence();
     super.initState();
   }

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 
 class DatabaseService {
-  final String uid, toID, timestamp, groupID;
-  DatabaseService({this.uid, this.toID, this.timestamp, this.groupID});
+  final String uid, timestamp;
+  DatabaseService({this.uid, this.timestamp});
   
   final DatabaseReference users = FirebaseDatabase.instance.reference();
 
@@ -47,7 +47,7 @@ class DatabaseService {
       'paymentMethod': paymentMethod,
       'schedule': schedule ?? ''
     });
-    return await users.child('orders').child('pendingOrders').push().set({
+    return await users.child('orders').child('allOrders').push().set({
       'name': name,
       'created': timestamp,
       'order': order,
@@ -56,8 +56,8 @@ class DatabaseService {
       'number': number,
       'transactionID': transactionID,
       'paymentMethod': paymentMethod,
-      'schedule': schedule ?? ''
-
+      'schedule': schedule ?? '',
+      'status': 'Pending'
     });
   }
 }

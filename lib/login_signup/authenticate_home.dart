@@ -23,25 +23,20 @@ class _AuthenticationHomeState extends State<AuthenticationHome> {
     if (currentIndex == 2)
       return landingPageView(
           url: 'assets/landing_page2.jpg',
-          title: 'Gas is for Everyone',
-          text: 'Making gas an everybody and everyday product',
           value: 0.66,
           goToLogin: widget.togglePage,
           toggleLandingPage: toggleLandingPage,
           currentIndex: currentIndex);
     if (currentIndex == 3)
       return landingPageView(
-          url: 'assets/landing_page2.jpg',
-          title: 'Clean Energy',
-          text: 'Everyone can use clean energy no matter where they are',
+          url: 'assets/landing_page3.jpg',
           value: 1,
           goToLogin: widget.togglePage,
           toggleLandingPage: toggleLandingPage,
-          currentIndex: currentIndex);
+          currentIndex: currentIndex,
+          color: Color.fromRGBO(1, 18, 46, 1));
     return landingPageView(
         url: 'assets/landing_page1.jpg',
-        title: 'Easy Ordering',
-        text: 'Easing ordering of gas at your convenience',
         value: 0.33,
         goToLogin: widget.togglePage,
         toggleLandingPage: toggleLandingPage,
@@ -52,14 +47,13 @@ class _AuthenticationHomeState extends State<AuthenticationHome> {
 //creates the three images shown on the landing page
 Widget landingPageView(
     {@required String url,
-    @required String title,
-    @required String text,
     @required double value,
+    Color color,
     @required Function toggleLandingPage,
     @required Function goToLogin,
     @required currentIndex}) {
   return Scaffold(
-    backgroundColor: Color(0xffffffff),
+    backgroundColor: color ?? Color(0xffffffff),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -77,39 +71,22 @@ Widget landingPageView(
                           goToLogin(2);
                         },
                         splashColor: Colors.transparent,
-                        child: Text(
-                          'Skip',
-                          style: TextStyle(
-                              color: Color.fromRGBO(81, 83, 82, 1),
-                              fontWeight: FontWeight.w400,
-                              fontSize: 24),
+                        child: Container(
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            'Skip',
+                            style: TextStyle(
+                                color: Color.fromRGBO(81, 83, 82, 1),
+                                fontWeight: FontWeight.w400,
+                                fontSize: 24),
+                          ),
                         ),
                       ),
                     ),
                     Expanded(
-                      flex: 4,
                       child: Container(
-                        alignment: Alignment(0, 0.6),
+                        alignment: Alignment(0, 0),
                         child: Image.asset(url),
-                      ),
-                    ),
-                    Expanded(
-                      child: RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                            style: TextStyle(
-                                color: Color.fromRGBO(57, 138, 239, 1),
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600),
-                            children: [
-                              TextSpan(text: '$title\n'),
-                              TextSpan(
-                                  text: text,
-                                  style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 16))
-                            ]),
                       ),
                     ),
                     Stack(

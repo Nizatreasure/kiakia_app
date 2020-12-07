@@ -12,9 +12,15 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="GAS360"
-        android:icon="@mipmap/ic_launcher2" >
+        android:icon="@mipmap/ic_launcher" >
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDuc6Wz_ssKWEiNA4xJyUzT812LZgxnVUc"/>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/app_icon" />
+<!--        <meta-data-->
+<!--            android:name="com.google.firebase.messaging.default_notification_channel_id"-->
+<!--            android:value="@string/default_notification_channel_id" />-->
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -53,12 +59,6 @@
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/app_icon" />
 
 
         <meta-data android:name="com.facebook.sdk.ApplicationId"

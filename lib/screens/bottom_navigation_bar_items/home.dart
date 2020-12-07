@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -108,8 +107,10 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext myContext) {
     double width = MediaQuery.of(myContext).size.width;
+    double height = MediaQuery.of(myContext).size.width;
     Color color = Colors.blue[900];
-    return userPurchaseHistory != null && userPurchaseHistory.isNotEmpty
+    return (userPurchaseHistory != null && userPurchaseHistory.isNotEmpty) ||
+            height < 500
         ? smallCylinder()
         : LayoutBuilder(
             builder: (context, viewportConstraint) {

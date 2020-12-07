@@ -34,41 +34,11 @@ class OrderReceived extends StatelessWidget {
                     child: Column(
                       children: [
                         Expanded(
-                          flex: 3,
                           child: Container(
-                            constraints: BoxConstraints(minHeight: 200),
-                            alignment: Alignment.center,
-                            child: Image.asset(
-                              'assets/landing_page1.jpg',
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                            child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(
-                                style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w500,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyText2
-                                        .color),
-                                children: [
-                                  TextSpan(
-                                    text: 'Order Received\n',
-                                  ),
-                                  TextSpan(
-                                      text:
-                                          'You can monitor and track your delivery on your dashboard. Thank you for choosing us',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400))
-                                ]),
-                          ),
-                        )),
+                            color: Colors.white,
+                            child: Image.asset('assets/received.jpg',),
+
+                          ),),
                         InkWell(
                           onTap: () {
                             Navigator.pop(context);
