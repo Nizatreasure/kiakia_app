@@ -25,7 +25,6 @@ class _FAQState extends State<FAQ> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    print(MediaQuery.of(context).size.height);
     void playAnimation(int index) {
       if (questions[index].expanded) {
         for (int i = 0; i < _animationController.length; i++)

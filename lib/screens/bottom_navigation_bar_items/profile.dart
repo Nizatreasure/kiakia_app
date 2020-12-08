@@ -84,11 +84,13 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     bool showLoader = Provider.of<ChangeButtonNavigationBarIndex>(context)
         .showProfilePicChangeLoader;
-    name = widget.details['name'];
-    number = widget.details['number'];
-    verificationStatus =
-        widget.details['isNumberVerified'] ? '' : 'not verified';
-    email = widget.details['email'];
+    if (widget.details != null) {
+      name = widget.details['name'];
+      number = widget.details['number'];
+      verificationStatus =
+          widget.details['isNumberVerified'] ? '' : 'not verified';
+      email = widget.details['email'];
+    }
     return Scaffold(
       key: _scaffoldKey,
       body: widget.details == null
@@ -287,21 +289,26 @@ class _ProfileState extends State<Profile> {
                                                                 .showSnackBar(
                                                                     SnackBar(
                                                               backgroundColor:
-                                                                  Colors.red[900],
+                                                                  Colors
+                                                                      .red[900],
                                                               content: Text(
                                                                 'Failed to verify number',
                                                                 style: TextStyle(
-                                                                    fontSize: 18),
+                                                                    fontSize:
+                                                                        18),
                                                               ),
-                                                              duration: Duration(
-                                                                  seconds: 2),
+                                                              duration:
+                                                                  Duration(
+                                                                      seconds:
+                                                                          2),
                                                             ));
                                                           }
                                                         },
                                                         child: Text(
                                                           '(click to verify number)',
                                                           style: TextStyle(
-                                                              color: Colors.blue),
+                                                              color:
+                                                                  Colors.blue),
                                                         )),
                                                   )
                                               ],
@@ -530,7 +537,8 @@ Future<void> changeUserPassword(
                                               .instance.currentUser
                                               .updatePassword(password);
                                           Navigator.pop(context);
-                                          await secureStorage.write(key: 'password', value: password);
+                                          await secureStorage.write(
+                                              key: 'password', value: password);
                                           key.currentState.showSnackBar(
                                             SnackBar(
                                               content: Text(

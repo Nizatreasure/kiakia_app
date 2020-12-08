@@ -107,10 +107,10 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext myContext) {
     double width = MediaQuery.of(myContext).size.width;
-    double height = MediaQuery.of(myContext).size.width;
+    double height = MediaQuery.of(myContext).size.height;
     Color color = Colors.blue[900];
     return (userPurchaseHistory != null && userPurchaseHistory.isNotEmpty) ||
-            height < 500
+            height < 650 || width < 380
         ? smallCylinder()
         : LayoutBuilder(
             builder: (context, viewportConstraint) {
@@ -423,122 +423,124 @@ class _HomeState extends State<Home> {
               ),
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.only(left: 30.0, bottom: 10),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Recent Activities',
-              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+        if (userPurchaseHistory != null && userPurchaseHistory.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 30.0, bottom: 10),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Recent Activities',
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+              ),
             ),
           ),
-        ),
-        ListView.builder(
-            itemCount: userPurchaseHistory.length,
-            shrinkWrap: true,
-            physics: ClampingScrollPhysics(),
-            reverse: true,
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => DetailedTransactionHistory(
-                                general: userPurchaseHistory[index],
-                                order: orderDetails[index],
-                                package: orderPackages[index],
-                              )));
-                },
-                child: Container(
-                  color: index % 2 == 0
-                      ? Color.fromRGBO(244, 246, 248, 1)
-                      : Color.fromRGBO(255, 255, 255, 1),
-                  padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        child: Text(orderDetails[index][0]['quantity'],
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText2
-                                .copyWith(
-                                    fontWeight: FontWeight.w600, fontSize: 22)),
-                      ),
-                      SizedBox(width: 7),
-                      Text(
-                        'x',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            RichText(
-                              text: TextSpan(
+          ListView.builder(
+              itemCount: userPurchaseHistory.length,
+              shrinkWrap: true,
+              physics: ClampingScrollPhysics(),
+              reverse: true,
+              itemBuilder: (context, index) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => DetailedTransactionHistory(
+                                  general: userPurchaseHistory[index],
+                                  order: orderDetails[index],
+                                  package: orderPackages[index],
+                                )));
+                  },
+                  child: Container(
+                    color: index % 2 == 0
+                        ? Color.fromRGBO(244, 246, 248, 1)
+                        : Color.fromRGBO(255, 255, 255, 1),
+                    padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          child: Text(orderDetails[index][0]['quantity'],
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText2
+                                  .copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 22)),
+                        ),
+                        SizedBox(width: 7),
+                        Text(
+                          'x',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        SizedBox(
+                          width: 15,
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyText2
+                                            .color
+                                            .withOpacity(0.75),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 17),
+                                    children: [
+                                      TextSpan(text: orderPackages[index][0]),
+                                      if (orderPackages[index].length > 1)
+                                        TextSpan(
+                                            text:
+                                                ' +${orderPackages[index].length - 1}')
+                                    ]),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Text(orderDetails[index][0]['size'],
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .textTheme
                                           .bodyText2
                                           .color
                                           .withOpacity(0.75),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 17),
-                                  children: [
-                                    TextSpan(text: orderPackages[index][0]),
-                                    if (orderPackages[index].length > 1)
-                                      TextSpan(
-                                          text:
-                                              ' +${orderPackages[index].length - 1}')
-                                  ]),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text(orderDetails[index][0]['size'],
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 16)),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                                formatCurrency.format(double.parse(
+                                    userPurchaseHistory[index]['total'])),
                                 style: TextStyle(
                                     color: Theme.of(context)
-                                        .textTheme
-                                        .bodyText2
-                                        .color
+                                        .buttonColor
                                         .withOpacity(0.75),
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 16)),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500)),
+                            SizedBox(height: 10),
+                            Text(
+                              DateFormat.yMd().format(
+                                  DateTime.fromMillisecondsSinceEpoch(int.parse(
+                                      userPurchaseHistory[index]['created']))),
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color.fromRGBO(179, 179, 182, 1)),
+                            ),
                           ],
                         ),
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                              formatCurrency.format(double.parse(
-                                  userPurchaseHistory[index]['total'])),
-                              style: TextStyle(
-                                  color: Theme.of(context)
-                                      .buttonColor
-                                      .withOpacity(0.75),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500)),
-                          SizedBox(height: 10),
-                          Text(
-                            DateFormat.yMd().format(
-                                DateTime.fromMillisecondsSinceEpoch(int.parse(
-                                    userPurchaseHistory[index]['created']))),
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color.fromRGBO(179, 179, 182, 1)),
-                          ),
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            })
+                );
+              })
       ],
     );
   }
