@@ -296,7 +296,8 @@ class _OrderState extends State<Order> with AutomaticKeepAliveClientMixin {
                         setState(() {
                           scheduled = val;
                           if (!scheduled) scheduledDate = '';
-                          if (scheduled && _controller2.text.isNotEmpty) scheduledDate = _controller2.text.toString();
+                          if (scheduled && _controller2.text.isNotEmpty)
+                            scheduledDate = _controller2.text.toString();
                         });
                       },
                       contentPadding: EdgeInsets.all(0),

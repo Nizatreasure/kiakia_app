@@ -16,6 +16,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
       pageId = id;
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,13 +48,17 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                                         border: BorderDirectional(
                                           bottom: BorderSide(
                                               color: Color.fromRGBO(
-                                                  81, 83, 82, 0.75), width: 2),
+                                                  81, 83, 82, 0.75),
+                                              width: 2),
                                         ),
                                       )
                                     : null,
                                 child: Text(
                                   'Login',
-                                  style: Theme.of(context).textTheme.bodyText2.copyWith(fontSize: 20),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2
+                                      .copyWith(fontSize: 20),
                                 ),
                               ),
                             ),
@@ -69,16 +74,22 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                               child: Container(
                                 height: 30,
                                 alignment: Alignment(0, 0.2),
-                                decoration: pageId == 2 ? BoxDecoration(
-                                  border: BorderDirectional(
-                                    bottom: BorderSide(
-                                        color:
-                                            Color.fromRGBO(81, 83, 82, 0.75), width: 2),
-                                  ),
-                                ): null,
+                                decoration: pageId == 2
+                                    ? BoxDecoration(
+                                        border: BorderDirectional(
+                                          bottom: BorderSide(
+                                              color: Color.fromRGBO(
+                                                  81, 83, 82, 0.75),
+                                              width: 2),
+                                        ),
+                                      )
+                                    : null,
                                 child: Text(
                                   'Sign Up',
-                                  style: Theme.of(context).textTheme.bodyText2.copyWith(fontSize: 20),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2
+                                      .copyWith(fontSize: 20),
                                 ),
                               ),
                             ),

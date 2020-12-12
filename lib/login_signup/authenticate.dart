@@ -26,8 +26,9 @@ class _AuthenticateState extends State<Authenticate> {
   Widget build(BuildContext context) {
     //decides whether to show the authentication home page, the sign up page or the log in page depending on the current id
     id = id == null ? widget.id : id;
-    if (id == 1) return CurrentUserLoginPage(togglePage: togglePages, data: widget.data);
-    if(id == 2) return LoginSignUpPage(togglePages);
+    if (id == 1)
+      return CurrentUserLoginPage(togglePage: togglePages, data: widget.data);
+    if (id == 2) return LoginSignUpPage(togglePages);
     return AuthenticationHome(togglePages);
   }
 }

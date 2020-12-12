@@ -196,9 +196,11 @@ class _LoginPageState extends State<LoginPage> {
                             showError = true;
                           });
                         errorMessage = _auth.error;
-                      }
-
-                      else Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard()));
+                      } else
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Dashboard()));
                     }
                   },
                   child: Container(

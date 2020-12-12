@@ -16,8 +16,6 @@ import 'package:kiakia/screens/bottom_navigation_bar_items/profile.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
-
-
 class Dashboard extends StatefulWidget {
   @override
   _DashboardState createState() => _DashboardState();
@@ -31,7 +29,9 @@ class _DashboardState extends State<Dashboard> {
   Map snap;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   List<String> _navigationBarTitle = ['Dashboard', 'Order', 'Profile'];
-  StreamSubscription<Event> userDataStream, gasLevelStream, userDeleteSubscription;
+  StreamSubscription<Event> userDataStream,
+      gasLevelStream,
+      userDeleteSubscription;
   double value; //the amount of gas left in the cylinder of the user
 
   //saves user information to their local storage
@@ -45,7 +45,6 @@ class _DashboardState extends State<Dashboard> {
     await storage.ready;
     storage.setItem('userData', userData);
   }
-
 
   //gets the user information from the database, listens for changes in the data and stores it locally
   _getUserInformation() async {
@@ -83,18 +82,24 @@ class _DashboardState extends State<Dashboard> {
         'Phone number not linked with this account. Please enter your number');
   }
 
-  Future logout () async {
+  Future logout() async {
     await storage.ready;
     Map userData = storage.getItem('userData');
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Authenticate(id: 1, data: userData,)));
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => Authenticate(
+                  id: 1,
+                  data: userData,
+                )));
   }
-
 
   //checks if a user has been deleted
   _checkIfDeleted() async {
     String id = FirebaseAuth.instance.currentUser.uid;
     final DatabaseReference database = FirebaseDatabase.instance.reference();
-    userDeleteSubscription = database.child('users').onChildRemoved.listen((event) async {
+    userDeleteSubscription =
+        database.child('users').onChildRemoved.listen((event) async {
       if (id == event.snapshot.key) {
         await storage.setItem('userData', {'val': 'deleted'});
         Phoenix.rebirth(context);
@@ -106,7 +111,6 @@ class _DashboardState extends State<Dashboard> {
 
   //gets the current level of gas in the user's cylinder from the database
   _getGasLevel() async {
-
     final uid = FirebaseAuth.instance.currentUser.uid;
     final DatabaseReference database = FirebaseDatabase.instance.reference();
     gasLevelStream = database
@@ -117,12 +121,12 @@ class _DashboardState extends State<Dashboard> {
         .listen((event) {
       setState(() {
         var snap = event.snapshot.value;
-       if (snap != null)
-         value = double.parse(snap.toString()) > 100.0
-             ? 100.0
-             : double.parse(snap.toString()) < 0.0
-             ? 0.0
-             : double.parse(snap.toString());
+        if (snap != null)
+          value = double.parse(snap.toString()) > 100.0
+              ? 100.0
+              : double.parse(snap.toString()) < 0.0
+                  ? 0.0
+                  : double.parse(snap.toString());
       });
     });
   }
@@ -185,10 +189,7 @@ class _DashboardState extends State<Dashboard> {
         centerTitle: true,
         elevation: 0,
       ),
-      drawer: MyDrawer(
-        photoURL: photoURL,
-        logout: logout
-      ),
+      drawer: MyDrawer(photoURL: photoURL, logout: logout),
       body: _bottomNavigationBarItemBody[_currentBottomNavigationBarIndex],
       bottomNavigationBar: BottomNavigationBar(
           unselectedItemColor: Color.fromRGBO(255, 255, 255, 0.5),

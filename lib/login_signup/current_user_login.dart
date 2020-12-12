@@ -99,9 +99,9 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
           //         ],
           //       );
           //     });
-        }
-
-        else Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard()));
+        } else
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => Dashboard()));
       }
     } on PlatformException catch (e) {
       print(e);
@@ -186,11 +186,14 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                           fontWeight: FontWeight.w500),
                                   children: [
                                     TextSpan(
-                                        text: width > 560
-                                            ? 'Welcome back '
-                                            : 'Welcome back ',),
+                                      text: width > 560
+                                          ? 'Welcome back '
+                                          : 'Welcome back ',
+                                    ),
                                     TextSpan(
-                                        text: widget.data['name'].toString().split(' ')[0],
+                                        text: widget.data['name']
+                                            .toString()
+                                            .split(' ')[0],
                                         style: TextStyle(
                                             fontSize: 32,
                                             color: Color.fromRGBO(
@@ -275,7 +278,8 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                     ),
                                     if (showError)
                                       Container(
-                                        padding: EdgeInsets.only(bottom: 15, top: 5),
+                                        padding:
+                                            EdgeInsets.only(bottom: 15, top: 5),
                                         alignment: Alignment.center,
                                         child: Text(
                                           errorMessage,
@@ -316,8 +320,12 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                                 showError = true;
                                               });
                                             errorMessage = _auth.error;
-                                          }
-                                          else Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard()));
+                                          } else
+                                            Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Dashboard()));
                                         }
                                       },
                                       child: Container(

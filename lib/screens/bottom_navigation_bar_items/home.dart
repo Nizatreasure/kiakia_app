@@ -64,14 +64,10 @@ class _HomeState extends State<Home> {
           int currentDateTime = DateTime.now().millisecondsSinceEpoch;
           if (currentDateTime - int.parse(element.snapshot.value['created']) <
               259200000) {
-
-                userPurchaseHistory.add(element.snapshot.value);
-                orderDetails
-                    .add(element.snapshot.value['order'].values.toList());
-                orderPackages
-                    .add(element.snapshot.value['order'].keys.toList());
-                if (mounted)
-                  setState(() {});
+            userPurchaseHistory.add(element.snapshot.value);
+            orderDetails.add(element.snapshot.value['order'].values.toList());
+            orderPackages.add(element.snapshot.value['order'].keys.toList());
+            if (mounted) setState(() {});
           }
         });
       }

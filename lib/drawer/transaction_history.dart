@@ -39,7 +39,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
           userPurchaseHistory.add(element.snapshot.value);
           orderDetails.add(element.snapshot.value['order'].values.toList());
           orderPackages.add(element.snapshot.value['order'].keys.toList());
-          if(mounted) setState(() {});
+          if (mounted) setState(() {});
         });
       }
     });

@@ -35,7 +35,6 @@ class _ShowProfilePicState extends State<ShowProfilePic> {
       body: Center(
         child: Hero(
           tag: 'image',
-
           child: CachedNetworkImage(
               imageUrl: widget.photoURL,
               placeholder: (context, url) => CircularProgressIndicator(),

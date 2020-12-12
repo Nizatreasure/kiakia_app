@@ -187,7 +187,8 @@ class _MyDrawerState extends State<MyDrawer> {
           InkWell(
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => FAQ()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => FAQ()));
             },
             splashColor: Colors.transparent,
             child: Container(
@@ -337,13 +338,19 @@ class _MyDrawerState extends State<MyDrawer> {
         barrierDismissible: false,
         child: Builder(builder: (context) {
           return AlertDialog(
-            content: Text('Sure you want to log out?', style: TextStyle(fontSize: 18.5, fontWeight: FontWeight.w500),),
+            content: Text(
+              'Sure you want to log out?',
+              style: TextStyle(fontSize: 18.5, fontWeight: FontWeight.w500),
+            ),
             actions: [
               FlatButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('NO', style: TextStyle(fontSize: 22),),
+                child: Text(
+                  'NO',
+                  style: TextStyle(fontSize: 22),
+                ),
               ),
               FlatButton(
                 onPressed: () async {
@@ -358,7 +365,10 @@ class _MyDrawerState extends State<MyDrawer> {
                   await AuthenticationService().logOut();
                   await widget.logout();
                 },
-                child: Text('YES', style: TextStyle(fontSize: 22),),
+                child: Text(
+                  'YES',
+                  style: TextStyle(fontSize: 22),
+                ),
               ),
             ],
           );
