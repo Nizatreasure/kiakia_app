@@ -10,6 +10,7 @@ class DatabaseService {
   //creates a document for the user in the database during signUp
   Future createUser(
       {name, number, email, url, isNumberVerified, provider}) async {
+    await users.child('roles').child(uid).set({'role': 'user'});
     return await users.child('users').child(uid).set({
       'name': name,
       'number': number ?? '',

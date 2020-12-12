@@ -6,6 +6,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:kiakia/login_signup/services/facebook_google_authentication.dart';
 import 'package:kiakia/login_signup/services/password_reset.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:kiakia/screens/dashboard.dart';
 
 class LoginPage extends StatefulWidget {
   //togglePage toggles the login and sign up  pages
@@ -186,7 +187,6 @@ class _LoginPageState extends State<LoginPage> {
                         showLoader = true;
                         showError = false;
                       });
-
                       dynamic result = await _auth.signInWithEmailAndPassword(
                           password: password, email: _emailController.text);
                       if (result == null) {
@@ -197,6 +197,8 @@ class _LoginPageState extends State<LoginPage> {
                           });
                         errorMessage = _auth.error;
                       }
+
+                      else Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard()));
                     }
                   },
                   child: Container(

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart'; //necessary for using inputFormatter to 
 import 'package:kiakia/login_signup/decoration2.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/login_signup/services/facebook_google_authentication.dart';
+import 'package:kiakia/screens/dashboard.dart';
 
 class SignUp extends StatefulWidget {
   //togglePage toggles the login and sign up pages
@@ -266,15 +267,18 @@ class _SignUpState extends State<SignUp> {
                             email: email,
                             name: formatUserName(name),
                             isNumberVerified: false);
-                        if (mounted) {
+
+                        if (result == null)
                           setState(() {
                             showLoader = false;
                             showError = true;
+                            errorMessage = _auth.error;
                           });
-                        }
-                        if (result == null) {
-                          errorMessage = _auth.error;
-                        }
+                        else
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Dashboard()));
                       } else if (await _numberNotUsedByAnotherClient(number) ==
                           'exists') {
                         if (mounted)

@@ -12,7 +12,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class MyDrawer extends StatefulWidget {
   final String photoURL;
-  MyDrawer({this.photoURL});
+  final Function logout;
+  MyDrawer({this.photoURL, this.logout});
 
   @override
   _MyDrawerState createState() => _MyDrawerState();
@@ -355,6 +356,7 @@ class _MyDrawerState extends State<MyDrawer> {
                   Navigator.pop(context);
                   await Future.delayed(Duration(seconds: 1));
                   await AuthenticationService().logOut();
+                  await widget.logout();
                 },
                 child: Text('YES', style: TextStyle(fontSize: 22),),
               ),

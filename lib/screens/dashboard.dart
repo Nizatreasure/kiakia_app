@@ -7,6 +7,7 @@ import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kiakia/drawer/drawer.dart';
+import 'package:kiakia/login_signup/authenticate.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/home.dart';
@@ -82,6 +83,12 @@ class _DashboardState extends State<Dashboard> {
         'Phone number not linked with this account. Please enter your number');
   }
 
+  Future logout () async {
+    await storage.ready;
+    Map userData = storage.getItem('userData');
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Authenticate(id: 1, data: userData,)));
+  }
+
 
   //checks if a user has been deleted
   _checkIfDeleted() async {
@@ -111,7 +118,11 @@ class _DashboardState extends State<Dashboard> {
       setState(() {
         var snap = event.snapshot.value;
        if (snap != null)
-         value = double.parse(snap.toString());
+         value = double.parse(snap.toString()) > 100.0
+             ? 100.0
+             : double.parse(snap.toString()) < 0.0
+             ? 0.0
+             : double.parse(snap.toString());
       });
     });
   }
@@ -176,6 +187,7 @@ class _DashboardState extends State<Dashboard> {
       ),
       drawer: MyDrawer(
         photoURL: photoURL,
+        logout: logout
       ),
       body: _bottomNavigationBarItemBody[_currentBottomNavigationBarIndex],
       bottomNavigationBar: BottomNavigationBar(

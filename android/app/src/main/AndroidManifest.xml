@@ -12,7 +12,8 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="GAS360"
-        android:icon="@mipmap/ic_launcher" >
+        android:icon="@mipmap/ic_launcher"
+        android:fullBackupContent="@xml/my_backup_rules">
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDuc6Wz_ssKWEiNA4xJyUzT812LZgxnVUc"/>
         <meta-data
@@ -83,6 +84,5 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        android:fullBackupContent="@xml/my_backup_rules">
     </application>
 </manifest>

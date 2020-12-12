@@ -79,10 +79,21 @@ exports.notifyUser = functions.database.ref('/gas_monitor/{id}/gas_level')
 
 //deletes the database for a user when the user has been deleted
 exports.deleteUser = functions.auth.user().onDelete(async (user) => {
-    await admin.database().ref(`/users/${user.uid}`).remove();
-    await admin.database().ref(`/orders/userOrders/${user.uid}`).remove();
-    await admin.database().ref(`/gas_monitor/${user.uid}`).remove();
-    await admin.storage().bucket().file(`pictures/${user.uid}`).delete();
+    const getRole = await admin.database().ref(`/roles/${user.uid}/role`).once('value');
+    const role = getRole.val();
+    if(role == 'user') {
+        await admin.database().ref(`/users/${user.uid}`).remove();
+        await admin.database().ref(`/orders/userOrders/${user.uid}`).remove();
+        await admin.database().ref(`/gas_monitor/${user.uid}`).remove();
+        await admin.database().ref(`/roles/${user.uid}`).remove();
+        await admin.storage().bucket().file(`pictures/${user.uid}`).delete();
+    }
+    if(role == 'rider') {
+        await admin.database().ref(`/riders/${user.uid}`).remove();
+        await admin.database().ref(`/orders/riderOrders/${user.uid}`).remove();
+        await admin.database().ref(`/roles/${user.uid}`).remove();
+        await admin.storage().bucket().file(`pictures/${user.uid}`).delete();
+    }
 });
 
 

@@ -7,6 +7,7 @@ import 'package:kiakia/login_signup/decoration2.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/login_signup/services/facebook_google_authentication.dart';
 import 'package:kiakia/login_signup/services/password_reset.dart';
+import 'package:kiakia/screens/dashboard.dart';
 import 'package:local_auth/local_auth.dart';
 
 class CurrentUserLoginPage extends StatefulWidget {
@@ -75,29 +76,32 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
           showError = false;
         });
         dynamic result = await _auth.signInWithEmailAndPassword(
-            email: email, password: pass);
+            email: email, password: pass, id: 1);
         if (result == null) {
           setState(() {
             authenticating = false;
             showError = true;
             showLoader = false;
+            errorMessage = _auth.error;
           });
-          showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  content: Text('An error occurred, please try again'),
-                  actions: [
-                    FlatButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text('OK'),
-                    )
-                  ],
-                );
-              });
+          // showDialog(
+          //     context: context,
+          //     builder: (context) {
+          //       return AlertDialog(
+          //         content: Text('An error occurred, please try again'),
+          //         actions: [
+          //           FlatButton(
+          //             onPressed: () {
+          //               Navigator.pop(context);
+          //             },
+          //             child: Text('OK'),
+          //           )
+          //         ],
+          //       );
+          //     });
         }
+
+        else Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard()));
       }
     } on PlatformException catch (e) {
       print(e);
@@ -271,7 +275,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                     ),
                                     if (showError)
                                       Container(
-                                        height: 30,
+                                        padding: EdgeInsets.only(bottom: 15, top: 5),
                                         alignment: Alignment.center,
                                         child: Text(
                                           errorMessage,
@@ -313,6 +317,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                                               });
                                             errorMessage = _auth.error;
                                           }
+                                          else Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard()));
                                         }
                                       },
                                       child: Container(

@@ -7,7 +7,6 @@ import 'package:kiakia/app_theme.dart';
 import 'package:kiakia/login_signup/authenticate.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
 import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
-import 'package:kiakia/screens/dashboard.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
@@ -180,40 +179,24 @@ class _WrapperState extends State<Wrapper> {
     _checkUserData();
     //decides whether to show the home or sign in page depending
     // on the information it receives from the user stream
-    if (Provider.of<User>(context) == null &&
-        FirebaseAuth.instance.currentUser == null) {
-      if (userData == null)
-        return Authenticate();
-      else if (userData.isEmpty) {
-        return Container(
-          color: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 90),
-          child: Center(
-            child: Image.asset('assets/gas_logo.jpg'),
-          ),
-        );
-      }
-      else if (userData['val'] == 'deleted') {
-        return Authenticate(
-          id: 2,
-        );
-      }
-      else
-        return Authenticate(
-          id: 1,
-          data: userData,
-        );
-    } else if (Provider.of<User>(context) != null &&
-        FirebaseAuth.instance.currentUser != null) {
-      return Dashboard();
-    } else {
+    if (userData == null)
+      return Authenticate();
+    else if (userData.isEmpty) {
       return Container(
         color: Colors.white,
         padding: EdgeInsets.symmetric(horizontal: 90),
         child: Center(
-          child: Image.asset('assets/gas_logo.jpg', ),
+          child: Image.asset('assets/gas_logo.jpg'),
         ),
       );
-    }
+    } else if (userData['val'] == 'deleted') {
+      return Authenticate(
+        id: 2,
+      );
+    } else
+      return Authenticate(
+        id: 1,
+        data: userData,
+      );
   }
 }
