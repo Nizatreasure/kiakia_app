@@ -6,7 +6,6 @@ import 'package:flutter/painting.dart';
 import 'package:kiakia/login_signup/decoration.dart';
 import 'package:kiakia/login_signup/services/change_user_number.dart';
 import 'package:kiakia/login_signup/services/database.dart';
-import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthenticationService {
@@ -81,7 +80,7 @@ class AuthenticationService {
         builder: (context) {
           return StatefulBuilder(
             builder: (context, setState) {
-              return customDialog.Dialog(
+              return Dialog(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)),
                 child: Padding(
@@ -151,7 +150,7 @@ class AuthenticationService {
                           //the change number and verify buttons  are created inside a row
                           Row(
                             children: [
-                              FlatButton(
+                              TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
                                     changeUserNumber(
@@ -163,7 +162,7 @@ class AuthenticationService {
                                         fontSize: 14, color: Colors.blue),
                                   )),
                               Spacer(),
-                              FlatButton(
+                              MaterialButton(
                                   textColor: Colors.blue,
                                   onPressed: _controller.text.trim().length < 4
                                       ? null
@@ -282,6 +281,7 @@ class AuthenticationService {
         phoneNumber: number,
         forceResendingToken: _resendToken,
         verificationCompleted: (phoneAuthCredentials) async {
+          print('auto complete has happened');
           await _auth.currentUser.linkWithCredential(phoneAuthCredentials);
           await FirebaseDatabase.instance
               .reference()
@@ -302,9 +302,10 @@ class AuthenticationService {
         },
         codeSent: (verId, int resendToken) async {
           _resendToken = resendToken;
+          Navigator.pop(myContext);
           showOtpDialog(myContext, verId, number);
         },
-        timeout: Duration(seconds: 30),
+        timeout: Duration(seconds: 60),
         codeAutoRetrievalTimeout: (verificationID) {},
       );
     } on FirebaseAuthException catch (e) {

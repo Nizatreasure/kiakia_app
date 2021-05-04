@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -120,8 +119,8 @@ class _ProfileState extends State<Profile> {
                                     : Column(
                                         children: [
                                           Stack(
+                                            clipBehavior: Clip.none,
                                             alignment: Alignment.center,
-                                            overflow: Overflow.visible,
                                             children: [
                                               CircleAvatar(
                                                 radius: 60,
@@ -203,7 +202,6 @@ class _ProfileState extends State<Profile> {
                                                         ),
                                                         onPressed: () {
                                                           PickProfileImage(
-                                                                  _scaffoldKey,
                                                                   context)
                                                               .pickImage();
                                                         }),
@@ -265,7 +263,8 @@ class _ProfileState extends State<Profile> {
                                                 SizedBox(width: 5),
                                                 if (verificationStatus != '')
                                                   Expanded(
-                                                    child: FlatButton(
+                                                    child: MaterialButton(
+                                                        elevation: 0,
                                                         splashColor:
                                                             Colors.transparent,
                                                         onPressed: () async {
@@ -284,8 +283,8 @@ class _ProfileState extends State<Profile> {
                                                                           context);
                                                             }
                                                           } catch (e) {
-                                                            _scaffoldKey
-                                                                .currentState
+                                                            ScaffoldMessenger
+                                                                    .of(context)
                                                                 .showSnackBar(
                                                                     SnackBar(
                                                               backgroundColor:
@@ -429,7 +428,7 @@ Future<void> changeUserPassword(
       barrierDismissible: false,
       builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
-          return customDialog.Dialog(
+          return Dialog(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
               child: SingleChildScrollView(
@@ -509,7 +508,7 @@ Future<void> changeUserPassword(
                         ),
                       Row(
                         children: [
-                          FlatButton(
+                          TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
                               },
@@ -519,7 +518,8 @@ Future<void> changeUserPassword(
                                     TextStyle(color: Colors.blue, fontSize: 16),
                               )),
                           Spacer(),
-                          FlatButton(
+                          MaterialButton(
+                              elevation: 0,
                               textColor: Colors.blue,
                               onPressed: showLoader
                                   ? null
@@ -539,7 +539,8 @@ Future<void> changeUserPassword(
                                           Navigator.pop(context);
                                           await secureStorage.write(
                                               key: 'password', value: password);
-                                          key.currentState.showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             SnackBar(
                                               content: Text(
                                                   'Password successfully updated',
@@ -615,7 +616,7 @@ Future<void> reAuthenticateUser(
       barrierDismissible: false,
       builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
-          return customDialog.Dialog(
+          return Dialog(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
               child: SingleChildScrollView(
@@ -693,7 +694,7 @@ Future<void> reAuthenticateUser(
                         ),
                       Row(
                         children: [
-                          FlatButton(
+                          TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
                               },
@@ -703,7 +704,8 @@ Future<void> reAuthenticateUser(
                                     TextStyle(color: Colors.blue, fontSize: 16),
                               )),
                           Spacer(),
-                          FlatButton(
+                          MaterialButton(
+                              elevation: 0,
                               textColor: Colors.blue,
                               onPressed: showLoader
                                   ? null

@@ -74,6 +74,7 @@ class _MyAppState extends State<MyApp> {
 
     if (FirebaseAuth.instance.currentUser != null)
       FirebaseAuth.instance.signOut();
+
     //returns the application when flutterFire has been successfully initialized
     return MultiProvider(
       providers: [

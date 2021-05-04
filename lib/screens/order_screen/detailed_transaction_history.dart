@@ -340,7 +340,8 @@ class _DetailedTransactionHistoryState
               ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-              child: FlatButton(
+              child: MaterialButton(
+                elevation: 0,
                 onPressed: riderLocation == null
                     ? null
                     : () {

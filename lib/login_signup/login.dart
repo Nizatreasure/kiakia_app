@@ -244,7 +244,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     InkWell(
                       onTap: () async {
-                        await googleSignIn(context);
+                        await googleSignIn(context, false);
                       },
                       child: Container(
                           height: 40, child: Image.asset('assets/google.jpg')),

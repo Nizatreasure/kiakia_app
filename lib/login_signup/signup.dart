@@ -45,7 +45,7 @@ class _SignUpState extends State<SignUp> {
   //queries the database to ensure that a number can also be used to sign up once.
   //returns false if the number exists and true if it doesn't exist in the database
   Future<String> _numberNotUsedByAnotherClient(String num) async {
-    List userNumbers = new List();
+    List userNumbers = [];
     try {
       final response = await get('https://www.google.com');
       if (response.statusCode == 200) {
@@ -317,7 +317,7 @@ class _SignUpState extends State<SignUp> {
                   children: [
                     InkWell(
                       onTap: () async {
-                        await googleSignIn(context);
+                        await googleSignIn(context, false);
                       },
                       child: Container(
                           height: 40, child: Image.asset('assets/google.jpg')),

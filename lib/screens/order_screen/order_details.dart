@@ -118,7 +118,7 @@ class _OrderDetailsState extends State<OrderDetails> {
               ],
             ),
             actions: [
-              FlatButton(
+              TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                     if (status == 'success') {
@@ -475,7 +475,7 @@ class _OrderDetailsState extends State<OrderDetails> {
           InkWell(
             onTap: () async {
               if (selectedPaymentMethod == null) {
-                _scaffoldKey.currentState.showSnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     backgroundColor: Colors.red[900],
                     content: Text(
@@ -548,7 +548,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                   }
                 } catch (e) {
                   Navigator.pop(context);
-                  _scaffoldKey.currentState.showSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       backgroundColor: Colors.red[900],
                       content: Text(
@@ -588,14 +588,14 @@ class _OrderDetailsState extends State<OrderDetails> {
                                   ]),
                             ),
                             actions: [
-                              FlatButton(
+                              TextButton(
                                   onPressed: disableButton
                                       ? null
                                       : () {
                                           Navigator.pop(context);
                                         },
                                   child: Text('NO')),
-                              FlatButton(
+                              TextButton(
                                   onPressed: disableButton
                                       ? null
                                       : () async {
@@ -636,7 +636,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                             }
                                           } catch (e) {
                                             Navigator.pop(context);
-                                            _scaffoldKey.currentState
+                                            ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               SnackBar(
                                                 backgroundColor:

@@ -5,11 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:kiakia/login_signup/decoration2.dart';
 import 'package:kiakia/login_signup/services/authentication.dart';
-import 'package:flutter/custom_flutter/custom_dialog.dart' as customDialog;
 
 //the function checks that the number the user is registering is unique
 Future<bool> _numberNotUsedByAnotherClient(String num) async {
-  List userNumbers = new List();
+  List userNumbers = [];
   DataSnapshot snapshot =
       await FirebaseDatabase.instance.reference().child('users').once();
   DataSnapshot snapshot2 =
@@ -40,7 +39,7 @@ Future<void> changeUserNumber(BuildContext myContext, String text) async {
       barrierDismissible: false,
       builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
-          return customDialog.Dialog(
+          return Dialog(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
               child: SingleChildScrollView(
@@ -115,7 +114,7 @@ Future<void> changeUserNumber(BuildContext myContext, String text) async {
                           : Text(''),
                       Row(
                         children: [
-                          FlatButton(
+                          TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
                               },
@@ -125,8 +124,12 @@ Future<void> changeUserNumber(BuildContext myContext, String text) async {
                                     TextStyle(color: Colors.blue, fontSize: 16),
                               )),
                           Spacer(),
-                          FlatButton(
-                              textColor: Colors.blue,
+                          TextButton(
+                              style: ButtonStyle(
+                                foregroundColor: numLength == 11
+                                    ? MaterialStateProperty.all(Colors.blue)
+                                    : null,
+                              ),
                               onPressed: numLength != 11
                                   ? null
                                   : () async {
@@ -209,13 +212,13 @@ Future<void> numberNotVerifiedPopup(
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17))
               ])),
           actions: [
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: Text('Cancel'),
             ),
-            FlatButton(
+            TextButton(
               onPressed: () async {
                 try {
                   final response = await get('https://www.google.com');
@@ -227,17 +230,19 @@ Future<void> numberNotVerifiedPopup(
                   Navigator.pop(context);
                   showDialog(
                       context: myContext,
-                      child: AlertDialog(
-                        content: Text(
-                            'Failed to verify number. You can retry verification from your profile page'),
-                        actions: [
-                          FlatButton(
-                              onPressed: () {
-                                Navigator.pop(myContext);
-                              },
-                              child: Text('OK'))
-                        ],
-                      ));
+                      builder: (context) {
+                        return AlertDialog(
+                          content: Text(
+                              'Failed to verify number. You can retry verification from your profile page'),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.pop(myContext);
+                                },
+                                child: Text('OK'))
+                          ],
+                        );
+                      });
                 } // calls the function that starts the number verification process
               },
               child: Text('Verify Now'),

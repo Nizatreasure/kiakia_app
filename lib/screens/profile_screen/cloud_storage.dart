@@ -10,9 +10,8 @@ import 'package:kiakia/screens/bottom_navigation_bar_items/change_item.dart';
 import 'package:provider/provider.dart';
 
 class CloudStorageService {
-  GlobalKey<ScaffoldState> key;
   BuildContext context;
-  CloudStorageService(this.key, this.context);
+  CloudStorageService(this.context);
   Future uploadProfilePic(File uploadImage) async {
     final uid = FirebaseAuth.instance.currentUser.uid;
     final storageReference =
@@ -22,10 +21,11 @@ class CloudStorageService {
 
     try {
       UploadTask _uploadTask = storageReference.putFile(uploadImage);
+
       _uploadTask.timeout(Duration(seconds: 40), onTimeout: () async {
         Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false)
             .updateShowProfilePicChangeLoader(false);
-        key.currentState.showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.red[900],
             content: Text(
@@ -53,7 +53,7 @@ class CloudStorageService {
         if (snapshot.state == TaskState.error) {
           Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false)
               .updateShowProfilePicChangeLoader(false);
-          key.currentState.showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               backgroundColor: Colors.red[900],
               content: Text(
@@ -69,7 +69,7 @@ class CloudStorageService {
       print(e);
       Provider.of<ChangeButtonNavigationBarIndex>(context, listen: false)
           .updateShowProfilePicChangeLoader(false);
-      key.currentState.showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.red[900],
           content: Text(
@@ -84,31 +84,28 @@ class CloudStorageService {
 }
 
 class PickProfileImage {
-  GlobalKey<ScaffoldState> key;
   BuildContext context;
-  PickProfileImage(this.key, this.context);
+  PickProfileImage(this.context);
   Future pickImage() async {
     FilePickerResult result =
         await FilePicker.platform.pickFiles(type: FileType.image);
 
     if (result != null) {
       File file = File(result.files.single.path);
-      CropProfileImage(key, context).cropImage(file.path);
+      CropProfileImage(context).cropImage(file.path);
     }
   }
 }
 
 class CropProfileImage {
-  GlobalKey<ScaffoldState> key;
-
   BuildContext context;
-  CropProfileImage(this.key, this.context);
+  CropProfileImage(this.context);
   Future cropImage(String path) async {
     File croppedFile = await ImageCropper.cropImage(
         sourcePath: path,
         aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
         androidUiSettings: AndroidUiSettings(hideBottomControls: true));
     if (croppedFile != null)
-      CloudStorageService(key, context).uploadProfilePic(croppedFile);
+      CloudStorageService(context).uploadProfilePic(croppedFile);
   }
 }

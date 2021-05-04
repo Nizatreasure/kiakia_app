@@ -148,7 +148,7 @@ class _HomeState extends State<Home> {
                               width: width,
                               constraints: BoxConstraints(minHeight: 350),
                               child: Stack(
-                                overflow: Overflow.visible,
+                                clipBehavior: Clip.none,
                                 alignment: Alignment.center,
                                 children: [
                                   Positioned(
@@ -313,7 +313,7 @@ class _HomeState extends State<Home> {
           margin: EdgeInsets.fromLTRB(60, 50, 60, 30),
           alignment: Alignment.bottomCenter,
           child: Stack(
-            overflow: Overflow.visible,
+            clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
               Positioned(

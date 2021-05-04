@@ -402,7 +402,7 @@ class _CurrentUserLoginPageState extends State<CurrentUserLoginPage> {
                               if (widget.data['provider'] == 'google')
                                 InkWell(
                                     onTap: () async {
-                                      await googleSignIn(context);
+                                      await googleSignIn(context, true);
                                     },
                                     splashColor: Colors.transparent,
                                     child: Container(

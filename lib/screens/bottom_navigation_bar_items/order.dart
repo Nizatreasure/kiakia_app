@@ -348,15 +348,16 @@ class _OrderState extends State<Order> with AutomaticKeepAliveClientMixin {
                             hintText: 'Select delivery date'),
                       ),
                     SizedBox(height: 25),
-                    FlatButton(
+                    MaterialButton(
                       height: 45,
+                      elevation: 0,
                       onPressed: () async {
                         await getLocationFromStorage();
                         if (number == null || number == '') {
                           setState(() {
                             showLoader = false;
                           });
-                          Scaffold.of(context).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               backgroundColor: Colors.red[900],
                               content: Text(
@@ -370,7 +371,7 @@ class _OrderState extends State<Order> with AutomaticKeepAliveClientMixin {
                           setState(() {
                             showLoader = false;
                           });
-                          Scaffold.of(context).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               backgroundColor: Colors.red[900],
                               content: Text(
@@ -385,7 +386,7 @@ class _OrderState extends State<Order> with AutomaticKeepAliveClientMixin {
                           setState(() {
                             showLoader = false;
                           });
-                          Scaffold.of(context).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               backgroundColor: Colors.red[900],
                               content: Text(
@@ -397,7 +398,7 @@ class _OrderState extends State<Order> with AutomaticKeepAliveClientMixin {
                           );
                         } else if (scheduled &&
                             (scheduledDate == null || scheduledDate.isEmpty)) {
-                          Scaffold.of(context).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               backgroundColor: Colors.red[900],
                               content: Text(
@@ -419,7 +420,7 @@ class _OrderState extends State<Order> with AutomaticKeepAliveClientMixin {
                           setState(() {
                             showLoader = false;
                           });
-                          Scaffold.of(context).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               backgroundColor: Colors.red[900],
                               content: Text(

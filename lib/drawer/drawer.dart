@@ -334,45 +334,46 @@ class _MyDrawerState extends State<MyDrawer> {
 
   void showLogOutConfirmation() {
     showDialog(
-        context: context,
-        barrierDismissible: false,
-        child: Builder(builder: (context) {
-          return AlertDialog(
-            content: Text(
-              'Sure you want to log out?',
-              style: TextStyle(fontSize: 18.5, fontWeight: FontWeight.w500),
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Text(
+            'Sure you want to log out?',
+            style: TextStyle(fontSize: 18.5, fontWeight: FontWeight.w500),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                'NO',
+                style: TextStyle(fontSize: 22),
+              ),
             ),
-            actions: [
-              FlatButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  'NO',
-                  style: TextStyle(fontSize: 22),
-                ),
+            TextButton(
+              onPressed: () async {
+                Provider.of<ChangeButtonNavigationBarIndex>(context,
+                        listen: false)
+                    .updateCurrentIndex(0);
+                Provider.of<ChangeButtonNavigationBarIndex>(context,
+                        listen: false)
+                    .updatePrices({});
+                Navigator.pop(context);
+                await Future.delayed(Duration(seconds: 1));
+                await AuthenticationService().logOut();
+                await widget.logout();
+              },
+              child: Text(
+                'YES',
+                style: TextStyle(fontSize: 22),
               ),
-              FlatButton(
-                onPressed: () async {
-                  Provider.of<ChangeButtonNavigationBarIndex>(context,
-                          listen: false)
-                      .updateCurrentIndex(0);
-                  Provider.of<ChangeButtonNavigationBarIndex>(context,
-                          listen: false)
-                      .updatePrices({});
-                  Navigator.pop(context);
-                  await Future.delayed(Duration(seconds: 1));
-                  await AuthenticationService().logOut();
-                  await widget.logout();
-                },
-                child: Text(
-                  'YES',
-                  style: TextStyle(fontSize: 22),
-                ),
-              ),
-            ],
-          );
-        }));
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -402,7 +403,7 @@ Future contactUs(context) async {
   String tel = '+2348140005500';
   showDialog(
     context: context,
-    child: Builder(builder: (context) {
+    builder: (context) {
       return Dialog(
         child: Container(
           height: 100,
@@ -466,7 +467,7 @@ Future contactUs(context) async {
           ),
         ),
       );
-    }),
+    },
   );
 }
 
@@ -474,14 +475,14 @@ Future showErrorDialog(String message, BuildContext context) async {
   showDialog(
     context: context,
     barrierDismissible: false,
-    child: Builder(builder: (context) {
+    builder: (context) {
       return AlertDialog(
         content: Text(
           message,
           textAlign: TextAlign.center,
         ),
         actions: [
-          FlatButton(
+          TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
@@ -489,6 +490,6 @@ Future showErrorDialog(String message, BuildContext context) async {
           )
         ],
       );
-    }),
+    },
   );
 }

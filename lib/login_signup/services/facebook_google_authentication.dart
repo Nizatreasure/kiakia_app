@@ -99,7 +99,7 @@ Future facebookLogin(context) async {
   }
 }
 
-Future googleSignIn(context) async {
+Future googleSignIn(context, bool silent) async {
   final _auth = FirebaseAuth.instance;
   final _database = FirebaseDatabase.instance.reference();
   dynamic userExists;
@@ -110,7 +110,9 @@ Future googleSignIn(context) async {
 
   try {
     myLoader(context);
-    final result = await _google.signIn();
+    var result =
+        silent ? await _google.signInSilently() : await _google.signIn();
+    if (silent && result == null) result = await _google.signIn();
     final authentication = await result.authentication;
     final credential = GoogleAuthProvider.credential(
         accessToken: authentication.accessToken,
@@ -161,7 +163,7 @@ Future googleSignIn(context) async {
       }
     }
   } catch (e) {
-    print(e.code);
+    print(e);
     Navigator.pop(context);
     return errorDialog(context, 'An error occurred, please try again');
   }
@@ -178,7 +180,7 @@ Future errorDialog(context, text) {
                 color: Colors.black, fontSize: 16, fontWeight: FontWeight.w400),
           ),
           actions: [
-            FlatButton(
+            TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
